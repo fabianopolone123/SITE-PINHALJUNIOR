@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Mensalidades de {{ child.name }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'finance-fees' %}">💰 Mensalidades</a>
+    <a href="{% url 'finance-reports' %}">📊 Relatórios</a>
+    <a href="#">🎟️ Eventos (futuro)</a>
+    <a href="#">🛍️ Lojinha (futuro)</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Mensalidades de {{ child.name }}</div>
+    {% if request.session.active_role == 'TESOUREIRO' %}
+        <p><a href="{% url 'finance-discount' child.id %}" style="display:inline-block; padding:10px 14px; background:#22c55e; color:#fff; border-radius:10px; text-decoration:none; font-weight:800;">Aplicar desconto</a></p>
+    {% endif %}
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Mês</th><th>Valor</th><th>Desconto</th><th>Final</th><th>Vencimento</th><th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fee in fees %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ fee.reference_month }}</td>
+                <td>R$ {{ fee.amount }}</td>
+                <td>R$ {{ fee.discount_amount }}</td>
+                <td>R$ {{ fee.final_amount }}</td>
+                <td>{{ fee.due_date }}</td>
+                <td>{{ fee.effective_status|default:fee.status }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">Nenhuma mensalidade.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

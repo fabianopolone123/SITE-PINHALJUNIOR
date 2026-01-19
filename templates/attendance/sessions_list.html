@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Sessões de Presença{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'attendance-sessions' %}">📋 Presença</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Sessões de Presença</div>
+    <a href="{% url 'attendance-session-new' %}" style="float:right; text-decoration:none; background:#22c55e; color:#fff; padding:10px 14px; border-radius:10px; font-weight:800;">+ Nova sessão</a>
+    <table style="width:100%; border-collapse: collapse; margin-top:16px;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Data</th>
+                <th>Tipo</th>
+                <th>Turma</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ session.date }}</td>
+                <td>{{ session.get_type_display }}</td>
+                <td>{{ session.class_group }}</td>
+                <td><a href="{% url 'attendance-take' session.pk %}">Marcar</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4">Nenhuma sessão cadastrada.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

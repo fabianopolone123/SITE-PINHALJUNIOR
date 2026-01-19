@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Tesoureiro{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'store-manage-orders' %}">🛒 Loja</a>
+    <a href="{% url 'attendance-sessions' %}">📋 Presença</a>
+    <a href="{% url 'points-index' %}">⭐ Pontos</a>
+    <a href="{% url 'finance-fees' %}">💰 Financeiro</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Tesoureiro</div>
+    <h1>Olá, {{ request.user.first_name|default:request.user.whatsapp_number }}!</h1>
+    <p>Cuidando das economias do clube.</p>
+</div>
+{% endblock %}

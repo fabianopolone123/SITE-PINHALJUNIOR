@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Vínculos{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'children-vinculos' %}">🔗 Vínculos</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Vínculos de Responsáveis</div>
+    <form method="get" style="margin-bottom:14px; display:grid; gap:10px; max-width:640px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
+            <label>Aventureiro
+                <input type="text" name="child" value="{{ child_query }}" placeholder="Buscar por nome">
+            </label>
+            <label>Responsável
+                <input type="text" name="guardian" value="{{ guardian_query }}" placeholder="Nome ou WhatsApp">
+            </label>
+            <label>Vínculo
+                <select name="relationship">
+                    <option value="">Todos</option>
+                    <option value="Pai/Mãe" {% if relationship_query == 'Pai/Mãe' %}selected{% endif %}>Pai/Mãe</option>
+                    <option value="Responsável" {% if relationship_query == 'Responsável' %}selected{% endif %}>Responsável</option>
+                    <option value="Avô/Avó" {% if relationship_query == 'Avô/Avó' %}selected{% endif %}>Avô/Avó</option>
+                    <option value="Tio/Tia" {% if relationship_query == 'Tio/Tia' %}selected{% endif %}>Tio/Tia</option>
+                    <option value="Irmão/Irmã" {% if relationship_query == 'Irmão/Irmã' %}selected{% endif %}>Irmão/Irmã</option>
+                </select>
+            </label>
+        </div>
+        <div>
+            <button type="submit" style="padding:10px 14px; border:none; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:800; margin-right:6px;">Filtrar</button>
+            <a href="{% url 'children-vinculos' %}" style="padding:10px 12px; border-radius:10px; background:#e2e8f0; color:#0f172a; text-decoration:none; font-weight:700;">Limpar</a>
+        </div>
+    </form>
+    <form method="post" style="margin-bottom:20px;">
+        {% csrf_token %}
+        <div style="display:grid; gap:10px; max-width:520px;">
+            {{ form.as_p }}
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#0ea5e9,#22d3ee); color:#fff; font-weight:800;">Adicionar vínculo</button>
+        </div>
+    </form>
+    <table style="width:100%; border-collapse: collapse; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0;">
+        <thead style="background:#2563eb; color:#fff;">
+            <tr style="text-align:left;">
+                <th style="padding:10px 12px;">Aventureiro</th>
+                <th style="padding:10px 12px;">Responsável</th>
+                <th style="padding:10px 12px;">Vínculo</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for link in guardian_links %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td style="padding:10px 12px;">{{ link.child.name }}</td>
+                <td style="padding:10px 12px;">{{ link.guardian_user.full_name|default:link.guardian_user.whatsapp_number }}</td>
+                <td style="padding:10px 12px;">{{ link.relationship }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" style="padding:10px 12px;">Nenhum vínculo cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

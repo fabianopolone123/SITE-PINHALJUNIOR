@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Gerar mensalidades{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'finance-fees' %}">💰 Mensalidades</a>
+    <a href="{% url 'finance-reports' %}">📊 Relatórios</a>
+    <a href="#">🎟️ Eventos (futuro)</a>
+    <a href="#">🛍️ Lojinha (futuro)</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Gerar mensalidades</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:520px;">
+            {{ form.as_p }}
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Gerar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

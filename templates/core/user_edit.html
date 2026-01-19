@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Editar usuário{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'user-list' %}">Usuários</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Editar usuário</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:520px;">
+            <label>WhatsApp
+                {{ form.whatsapp_number }}
+            </label>
+            <label>Nome
+                {{ form.first_name }}
+            </label>
+            <label>Sobrenome
+                {{ form.last_name }}
+            </label>
+            <label>Perfil principal
+                {{ form.role }}
+            </label>
+            <label>Perfis adicionais
+                {{ form.extra_roles }}
+            </label>
+            <label>Senha (em branco para manter)
+                {{ form.password }}
+            </label>
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Salvar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

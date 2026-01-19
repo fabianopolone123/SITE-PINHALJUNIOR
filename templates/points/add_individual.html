@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Lançar pontos (individual){% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'points-index' %}">⭐ Pontos</a>
+    <a href="{% url 'points-add-batch' %}">🧑‍🤝‍🧑 Lançar em lote</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Lançar pontos (individual)</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:420px;">
+            {{ form.as_p }}
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Lançar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Marcar progresso{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'curriculum-content' %}">📘 Conteúdos</a>
+    <a href="{% url 'curriculum-schedule' %}">🗓️ Cronograma</a>
+    <a href="{% url 'curriculum-progress' %}">✅ Progresso</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Marcar progresso</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:520px;">
+            {{ form.as_p }}
+            <button name="filter" value="1" style="padding:10px 12px; border:none; border-radius:10px; background:#e2e8f0; font-weight:700;">Carregar turma</button>
+        </div>
+        {% if children %}
+            <div style="margin-top:18px;">
+                <strong>Conteúdo:</strong> {{ content_item }}<br>
+                <strong>Turma:</strong> {{ form.cleaned_data.class_group|default:selected_class }}
+            </div>
+            <table style="width:100%; border-collapse: collapse; margin-top:12px;">
+                <thead>
+                    <tr style="text-align:left;">
+                        <th>Aventureiro</th>
+                        <th>Status</th>
+                        <th>Obs</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for child in children %}
+                    {% with prog=child.curriculum_progress.first %}
+                    <tr style="border-top:1px solid #e2e8f0;">
+                        <td>{{ child.name }}</td>
+                        <td>
+                            <select name="status_{{ child.id }}">
+                                {% for value,label in prog.Status.choices %}
+                                    <option value="{{ value }}" {% if prog and prog.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td>
+                            <input type="text" name="note_{{ child.id }}" value="{% if prog %}{{ prog.note }}{% endif %}" style="width:100%;">
+                        </td>
+                    </tr>
+                    {% endwith %}
+                {% empty %}
+                    <tr><td colspan="3">Nenhum aluno nesta turma.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" name="save" value="1" style="margin-top:12px; padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Salvar progresso</button>
+        {% endif %}
+    </form>
+</div>
+{% endblock %}

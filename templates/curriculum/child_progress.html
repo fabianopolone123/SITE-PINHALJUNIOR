@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Progresso de {{ child.name }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'curriculum-progress' %}">✅ Progresso</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Progresso de {{ child.name }}</div>
+    <div style="display:grid; gap:10px;">
+        {% for row in progress %}
+        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+            <strong>{{ row.content_item.title }}</strong> ({{ row.content_item.module }})<br>
+            Status: {{ row.get_status_display }}<br>
+            {% if row.note %}<em>Obs: {{ row.note }}</em><br>{% endif %}
+            Atualizado em {{ row.marked_at|date:"d/m/Y H:i" }}
+        </div>
+        {% empty %}
+        <p>Nenhum progresso registrado para este aluno.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

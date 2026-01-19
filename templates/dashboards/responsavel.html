@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Responsável{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'store-catalog' %}">Loja</a>
+    <a href="{% url 'attendance-my' %}">Presença</a>
+    <a href="{% url 'points-my' %}">Pontos</a>
+    <a href="{% url 'documents-my' %}">Documentos</a>
+    <a href="{% url 'finance-my' %}">Financeiro</a>
+    <a href="{% url 'children-meus' %}">Meus Aventureiros</a>
+    <a href="#">Atividades do filho</a>
+    <a href="#">Comunicados</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Responsável</div>
+    <h1>Olá, {{ request.user.first_name|default:request.user.whatsapp_number }}!</h1>
+    <p>Acompanhamento e comunicação com o clube.</p>
+</div>
+{% endblock %}

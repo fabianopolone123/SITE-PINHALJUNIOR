@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Aventureiro {{ child.name }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'user-list' %}">Usuários</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <style>
+        .overview-container { width: 100%; display: grid; gap: 16px; }
+        .table-wrap { width: 100%; overflow-x: auto; }
+        .table-wrap table { min-width: 720px; border-collapse: collapse; }
+        .table-wrap th, .table-wrap td { padding: 8px 10px; border-top: 1px solid #e2e8f0; text-align: left; }
+        .stat-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr)); gap:12px; }
+        .stat-card { padding:12px; border-radius:12px; }
+    </style>
+    <div class="overview-container">
+    <div class="chip">Visão do aventureiro</div>
+    <h2 style="margin:6px 0 2px;">{{ child.name }}</h2>
+    <p style="margin:0 0 12px;">Classe: {{ child.class_group|default:"-" }} | Nascimento: {{ child.birth_date }}</p>
+
+    <div class="stat-grid" style="margin-bottom:18px;">
+        <div class="stat-card" style="background:#e0f2fe;"><strong>Pontos totais</strong><div style="font-size:1.5rem;">{{ points_total }}</div></div>
+        <div class="stat-card" style="background:#dcfce7;"><strong>Mensalidades</strong><div style="font-size:1.5rem;">{{ fees|length }} registros</div></div>
+        <div class="stat-card" style="background:#fef9c3;"><strong>Presenças</strong><div style="font-size:1.5rem;">{{ attendance_last|length }} últimas</div></div>
+        <div class="stat-card" style="background:#f1f5f9;"><strong>Progresso</strong><div style="font-size:1.5rem;">{{ progress|length }} conteúdos</div></div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap:16px; margin-bottom:16px;">
+        <div>
+            <h3>Últimos pontos</h3>
+            <div class="table-wrap">
+            <table style="width:100%;">
+                <thead><tr><th>Data</th><th>Pontos</th><th>Motivo</th><th>Por</th></tr></thead>
+                <tbody>
+                    {% for p in points_last %}
+                    <tr>
+                        <td>{{ p.created_at }}</td>
+                        <td>{{ p.points }}</td>
+                        <td>{{ p.reason }}</td>
+                        <td>
+                            {% if p.created_by_user %}
+                                {{ p.created_by_user.full_name|default:p.created_by_user.whatsapp_number }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Sem lançamentos.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+        <div>
+            <h3>Presença (últimas)</h3>
+            <div class="table-wrap">
+            <table style="width:100%;">
+                <thead><tr><th>Data</th><th>Tipo</th><th>Turma</th><th>Marcado</th></tr></thead>
+                <tbody>
+                    {% for rec in attendance_last %}
+                    <tr>
+                        <td>{{ rec.session.date }}</td>
+                        <td>{{ rec.session.type }}</td>
+                        <td>{{ rec.session.class_group }}</td>
+                        <td>{{ rec.present|yesno:"Presente,Ausente" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">Sem presenças registradas.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px,1fr)); gap:16px; margin-bottom:16px;">
+        <div>
+            <h3>Mensalidades recentes</h3>
+            <div class="table-wrap">
+            <table style="width:100%;">
+                <thead><tr><th>Mês</th><th>Valor</th><th>Desconto</th><th>Final</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for fee in fees %}
+                    <tr>
+                        <td>{{ fee.reference_month }}</td>
+                        <td>R$ {{ fee.amount }}</td>
+                        <td>R$ {{ fee.discount_amount }}</td>
+                        <td>R$ {{ fee.final_amount }}</td>
+                        <td>{{ fee.status }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5">Sem mensalidades.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+        <div>
+            <h3>Documentos</h3>
+            <div class="table-wrap">
+            <table style="width:100%;">
+                <thead><tr><th>Documento</th><th>Status</th><th>Validade</th></tr></thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td>{{ doc.document_type.name }}</td>
+                        <td>{{ doc.status }}</td>
+                        <td>{{ doc.valid_until|default:"-" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3">Sem documentos cadastrados.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        </div>
+    </div>
+
+    <h3>Progresso (apostila)</h3>
+    <div class="table-wrap">
+        <table style="width:100%;">
+            <thead><tr><th>Conteúdo</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for row in progress %}
+                <tr>
+                    <td>{{ row.content_item.title }}</td>
+                    <td>{{ row.status }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="2">Sem progresso registrado.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
+</div>
+{% endblock %}

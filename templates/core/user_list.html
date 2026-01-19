@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Usuários{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'user-list' %}">Usuários</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Usuários e Aventureiros</div>
+    {% if messages %}
+        <ul class="messages" style="list-style:none; padding:0; margin:0 0 10px;">
+            {% for message in messages %}
+                {% if not 'auth' in message.tags and not 'role_switch' in message.tags %}
+                <li style="background:#ecfdf3; color:#166534; border:1px solid #86efac; padding:8px 10px; border-radius:10px; margin-bottom:6px;">
+                    {{ message }}
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <form method="get" style="margin-bottom:14px; display:grid; gap:10px;">
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px;">
+            <label>Buscar usuário (nome ou WhatsApp)
+                <input type="text" name="q" value="{{ search }}" placeholder="Digite para filtrar">
+            </label>
+            <label>Perfil
+                <select name="role">
+                    <option value="">Todos</option>
+                    <option value="ADM" {% if selected_role == 'ADM' %}selected{% endif %}>ADM</option>
+                    <option value="DIRETORIA" {% if selected_role == 'DIRETORIA' %}selected{% endif %}>Diretoria</option>
+                    <option value="SECRETARIA" {% if selected_role == 'SECRETARIA' %}selected{% endif %}>Secretaria</option>
+                    <option value="TESOUREIRO" {% if selected_role == 'TESOUREIRO' %}selected{% endif %}>Tesoureiro</option>
+                    <option value="PROFESSOR" {% if selected_role == 'PROFESSOR' %}selected{% endif %}>Professor</option>
+                    <option value="RESPONSAVEL" {% if selected_role == 'RESPONSAVEL' %}selected{% endif %}>Responsável</option>
+                </select>
+            </label>
+            <label>Buscar aventureiro
+                <input type="text" name="child" value="{{ child_search }}" placeholder="Nome do aventureiro">
+            </label>
+            <label>Classe
+                <select name="class">
+                    <option value="">Todas</option>
+                    {% for cls in class_options %}
+                    <option value="{{ cls }}" {% if child_class == cls %}selected{% endif %}>{{ cls }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div>
+            <button type="submit" style="padding:10px 14px; border:none; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:800; margin-right:6px;">Aplicar filtros</button>
+            <a href="{% url 'user-list' %}" style="padding:10px 12px; border-radius:10px; background:#e2e8f0; color:#0f172a; text-decoration:none; font-weight:700;">Limpar</a>
+            <a href="{% url 'user-create' %}" style="margin-left:6px; color:#0ea5e9; font-weight:800; text-decoration:none;">+ Novo usuário</a>
+        </div>
+    </form>
+
+    <h3>Usuários</h3>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Nome</th><th>WhatsApp</th><th>Perfil</th><th>Status</th><th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ u.first_name }} {{ u.last_name }}</td>
+                <td>{{ u.whatsapp_number }}</td>
+                <td>{{ u.role }}</td>
+                <td>
+                    {% if u.is_active %}
+                        <span style="display:inline-flex; padding:4px 10px; border-radius:999px; background:#dcfce7; color:#15803d; font-weight:600;">Ativo</span>
+                    {% else %}
+                        <span style="display:inline-flex; padding:4px 10px; border-radius:999px; background:#fee2e2; color:#b91c1c; font-weight:600;">Pendente</span>
+                    {% endif %}
+                </td>
+                <td style="display:flex; gap:6px; align-items:center;">
+                    <a href="{% url 'user-edit' u.id %}" style="color:#0ea5e9; text-decoration:underline; font-weight:700;">Editar</a>
+                    {% if not u.is_active %}
+                    <form method="post" action="{% url 'user-activate' u.id %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" style="background:#22c55e; border:none; border-radius:8px; padding:6px 10px; color:#fff; font-weight:700; cursor:pointer;">Ativar</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Nenhum usuário.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Aventureiros</h3>
+    <table style="width:100%; border-collapse:collapse;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Nome</th><th>Classe</th><th>Nascimento</th><th></th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in children %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ c.name }}</td>
+                <td>{{ c.class_group }}</td>
+                <td>{{ c.birth_date }}</td>
+                <td><a href="{% url 'child-overview' c.id %}" style="color:#0ea5e9; text-decoration:underline; font-weight:700;">Ver</a></td>
+                <td><a href="{% url 'child-edit' c.id %}" style="color:#0ea5e9; text-decoration:underline; font-weight:700;">Editar</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Nenhum aventureiro.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div style="margin-top:18px;">
+        <h3>Vínculos</h3>
+        <p style="margin:6px 0 10px; color:#475569;">Gerencie quais responsáveis estão ligados a cada aventureiro.</p>
+        <a href="{% url 'children-vinculos' %}" style="padding:10px 14px; border-radius:10px; background:#0ea5e9; color:#fff; text-decoration:none; font-weight:800;">Abrir vínculos</a>
+    </div>
+</div>
+{% endblock %}

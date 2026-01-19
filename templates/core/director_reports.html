@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'user-list' %}">👥 Usuários</a>
+    <a href="{% url 'director-reports' %}">📊 Relatórios</a>
+    <a href="{% url 'attendance-sessions' %}">📋 Presença</a>
+    <a href="{% url 'points-index' %}">⭐ Pontos</a>
+    <a href="{% url 'documents-overview' %}">📄 Documentação</a>
+    <a href="{% url 'finance-fees' %}">💰 Financeiro</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Visão geral do clube</div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:14px; margin-bottom:14px;">
+        <div style="background:#e0f2fe; padding:14px; border-radius:14px;">
+            <strong>Total de usuários</strong>
+            <div style="font-size:1.8rem;">{{ users_count }}</div>
+        </div>
+        <div style="background:#dcfce7; padding:14px; border-radius:14px;">
+            <strong>Total de aventureiros</strong>
+            <div style="font-size:1.8rem;">{{ children_count }}</div>
+        </div>
+        <div style="background:#fef9c3; padding:14px; border-radius:14px;">
+            <strong>Pontos acumulados</strong>
+            <div style="font-size:1.8rem;">{{ points_total }}</div>
+        </div>
+        <div style="background:#f1f5f9; padding:14px; border-radius:14px;">
+            <strong>Sessões de presença</strong>
+            <div style="font-size:1.8rem;">{{ sessions_count }}</div>
+            <small>{{ attendance_marked }} presenças registradas</small>
+        </div>
+    </div>
+
+    <h3>Usuários por perfil</h3>
+    <ul>
+        {% for row in users_by_role %}
+            <li>{{ row.role }}: {{ row.total }}</li>
+        {% empty %}
+            <li>Nenhum dado.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Aventureiros por classe</h3>
+    <ul>
+        {% for row in children_by_class %}
+            <li>{{ row.class_group|default:"Sem classe" }}: {{ row.total }}</li>
+        {% empty %}
+            <li>Nenhum dado.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Financeiro</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:10px; margin-bottom:10px;">
+        <div style="background:#f1f5f9; padding:12px; border-radius:12px;">
+            <strong>Total bruto</strong><br>R$ {{ fee_totals.total_amount|default:"0" }}
+        </div>
+        <div style="background:#e0f2fe; padding:12px; border-radius:12px;">
+            <strong>Descontos</strong><br>R$ {{ fee_totals.total_discount|default:"0" }}
+        </div>
+        <div style="background:#dcfce7; padding:12px; border-radius:12px;">
+            <strong>Valor final</strong><br>R$ {{ fee_totals.total_final|default:"0" }}
+        </div>
+    </div>
+    <ul>
+        {% for row in fee_counts %}
+            <li>{{ row.status }}: {{ row.total }}</li>
+        {% empty %}
+            <li>Sem mensalidades.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

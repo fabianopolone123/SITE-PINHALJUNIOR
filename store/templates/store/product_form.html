@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Produto{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'store-manage-products' %}">Produtos</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Produto</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:620px;">
+            <label>Nome
+                {{ form.name }}
+            </label>
+            <label>Descrição
+                {{ form.description }}
+            </label>
+            <label style="display:flex; align-items:center; gap:8px;">
+                {{ form.active }} Ativo
+            </label>
+            <label>Preço base
+                {{ form.price }}
+            </label>
+            <label>Estoque
+                {{ form.stock }}
+            </label>
+            <label>Categoria
+                {{ form.category }}
+            </label>
+            <label>Imagem (URL)
+                {{ form.image_url }}
+            </label>
+            <div style="display:none;">{{ form.options }}</div>
+            <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" id="use-variants"> Usar variações (preço/estoque por variação)
+            </label>
+            <div id="variants-section" style="display:none; border:1px solid #e2e8f0; padding:10px; border-radius:10px;">
+                <div style="font-weight:700; margin-bottom:6px;">Variações</div>
+                <div id="variant-rows" style="display:grid; gap:10px;">
+                </div>
+                <button type="button" id="add-variant" style="margin-top:6px; padding:8px 12px; border:none; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:800;">+ Adicionar variação</button>
+            </div>
+            <div style="display:none;">{{ form.variants }}</div>
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Salvar</button>
+        </div>
+    </form>
+</div>
+{{ variant_data|json_script:"variant-data" }}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const useVariants = document.getElementById('use-variants');
+        const variantsSection = document.getElementById('variants-section');
+        const variantRows = document.getElementById('variant-rows');
+        const addBtn = document.getElementById('add-variant');
+        const hiddenVariants = document.querySelector('textarea[name="variants"]');
+        let initialData = [];
+        try {
+            const el = document.getElementById('variant-data');
+            if (el) initialData = JSON.parse(el.textContent);
+        } catch (e) {}
+
+        function syncHidden() {
+            const lines = [];
+            variantRows.querySelectorAll('.variant-row').forEach(row => {
+                const name = row.querySelector('.var-name').value.trim();
+                let price = row.querySelector('.var-price').value.trim().replace(',', '.');
+                const stock = row.querySelector('.var-stock').value.trim();
+                if (name && price && stock) {
+                    lines.push(`${name};${price};${stock}`);
+                }
+            });
+            hiddenVariants.value = lines.join('\\n');
+        }
+
+        function addRow(name='', price='', stock='') {
+            const row = document.createElement('div');
+            row.className = 'variant-row';
+            row.style = 'display:grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap:8px; align-items:center;';
+            row.innerHTML = `
+                <input type="text" name="variant_name" class="var-name" placeholder="Nome (ex: P / Azul)" value="${name}">
+                <input type="number" step="0.01" name="variant_price" class="var-price" placeholder="Preço" value="${price}">
+                <input type="number" name="variant_stock" class="var-stock" placeholder="Estoque" value="${stock}">
+                <button type="button" class="remove-var" style="padding:6px 10px; border:none; border-radius:8px; background:#f87171; color:#fff;">X</button>
+            `;
+            row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', syncHidden));
+            row.querySelector('.remove-var').addEventListener('click', () => {
+                row.remove();
+                syncHidden();
+            });
+            variantRows.appendChild(row);
+            syncHidden();
+        }
+
+        function toggleVariants() {
+            const on = useVariants.checked;
+            variantsSection.style.display = on ? 'block' : 'none';
+            if (on) {
+                if (variantRows.childElementCount === 0) addRow();
+                syncHidden();
+            }
+        }
+
+        addBtn.addEventListener('click', () => addRow());
+        useVariants.addEventListener('change', toggleVariants);
+        const formEl = document.querySelector('form');
+        if (formEl) {
+            formEl.addEventListener('submit', () => {
+                syncHidden();
+            });
+        }
+
+        // Pré-carrega variações existentes
+        if (initialData.length > 0) {
+            useVariants.checked = true;
+            variantsSection.style.display = 'block';
+            initialData.forEach(v => addRow(v.name || '', v.price || '', v.stock || ''));
+            syncHidden();
+        } else if (hiddenVariants && hiddenVariants.value.trim()) {
+            useVariants.checked = true;
+            variantsSection.style.display = 'block';
+            hiddenVariants.value.trim().split('\\n').forEach(line => {
+                const parts = line.split(';');
+                if (parts.length >= 3) addRow(parts[0], parts[1], parts[2]);
+            });
+            syncHidden();
+        }
+        toggleVariants();
+    });
+</script>
+{% endblock %}

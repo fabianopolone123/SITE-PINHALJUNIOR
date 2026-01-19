@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Documentos de {{ child.name }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'documents-overview' %}">📄 Documentação</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Documentos de {{ child.name }}</div>
+    <div style="display:grid; gap:12px;">
+        {% for doc in docs %}
+        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+            <strong>{{ doc.document_type.name }}</strong> — {{ doc.get_status_display }}<br>
+            Validade: {% if doc.valid_until %}{{ doc.valid_until }}{% else %}-{% endif %}<br>
+            {% if doc.note %}<em>Obs: {{ doc.note }}</em><br>{% endif %}
+            {% if request.user.role == 'SECRETARIA' or request.user.role == 'DIRETORIA' %}
+                <a href="{% url 'documents-child-update' child.id doc.id %}">Atualizar</a>
+                <a href="{% url 'documents-child-upload' child.id doc.id %}">Anexar</a>
+                <a href="{% url 'documents-request' child.id doc.document_type.id %}">Cobrar via WhatsApp</a>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p>Nenhum documento cadastrado.</p>
+        {% endfor %}
+    </div>
+    <h3>Histórico de solicitações</h3>
+    <div style="display:grid; gap:8px;">
+        {% for req in requests %}
+        <div style="padding:10px; border:1px dashed #cbd5e1; border-radius:10px;">
+            {{ req.sent_at|date:"d/m/Y H:i" }} — {{ req.document_type.name }} — {{ req.get_status_display }}<br>
+            Para: {{ req.sent_to_user.whatsapp_number }} | Por: {{ req.sent_by_user }}
+        </div>
+        {% empty %}
+        <p>Nenhuma solicitação registrada.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'children-vinculos' %}">🔗 Vínculos</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">{{ title }}</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:14px; max-width:420px;">
+            {{ form.as_p }}
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Salvar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

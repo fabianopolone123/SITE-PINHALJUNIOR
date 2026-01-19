@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Meus pedidos{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'store-catalog' %}">Loja</a>
+    <a href="{% url 'store-orders' %}">Meus pedidos</a>
+    <a href="{% url 'store-cart' %}">Carrinho</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Meus pedidos</div>
+    <table style="width:100%; border-collapse:collapse;">
+        <thead><tr><th>ID</th><th>Status</th><th>Total</th><th>Data</th><th></th></tr></thead>
+        <tbody>
+            {% for order in orders %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ order.id }}</td>
+                <td>{{ order.status }}</td>
+                <td>R$ {{ order.total }}</td>
+                <td>{{ order.created_at }}</td>
+                <td>
+                    {% if order.status == 'PENDING' %}
+                        <a href="{% url 'store-pay-order' order.id %}" style="color:#0ea5e9; font-weight:700;">Pagar</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Sem pedidos.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load attendance_extras %}
+{% load curriculum_extras %}
+{% block title %}Progresso dos meus aventureiros{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'curriculum-my' %}">📘 Apostila / Progresso</a>
+    <a href="{% url 'children-meus' %}">🧒 Meus Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Progresso dos meus aventureiros</div>
+    <div style="display:grid; gap:14px;">
+        {% for child in children %}
+        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+            <strong>{{ child.name }}</strong> ({{ child.class_group }})
+            <div style="display:grid; gap:8px; margin-top:8px;">
+                {% for row in progress_map|get_item:child.id %}
+                <div style="padding:8px; border:1px dashed #cbd5e1; border-radius:10px;">
+                    {{ row.content_item.title }} — {{ row.get_status_display }}<br>
+                    {% if row.note %}<em>Obs: {{ row.note }}</em><br>{% endif %}
+                    Atualizado em {{ row.marked_at|date:"d/m/Y H:i" }}
+                </div>
+                {% empty %}
+                <p style="margin:0;">Nenhum progresso registrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p>Nenhum aventureiro vinculado.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

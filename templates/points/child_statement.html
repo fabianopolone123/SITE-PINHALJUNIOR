@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Extrato de {{ child.name }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'points-index' %}">⭐ Pontos</a>
+    <a href="{% url 'points-add-individual' %}">➕ Lançar individual</a>
+    <a href="{% url 'points-add-batch' %}">🧑‍🤝‍🧑 Lançar em lote</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Extrato de {{ child.name }}</div>
+    <div style="display:grid; gap:10px;">
+        {% for row in ledger %}
+        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+            {{ row.created_at|date:"d/m/Y H:i" }} — <strong>{{ row.points }} pts</strong><br>
+            Motivo: {{ row.reason }}<br>
+            Por: {{ row.created_by_user }}
+        </div>
+        {% empty %}
+        <p>Nenhum lançamento para esta criança.</p>
+        {% endfor %}
+        <p><strong>Total:</strong> {{ total }} pts</p>
+    </div>
+</div>
+{% endblock %}

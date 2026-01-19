@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load attendance_extras %}
+{% block title %}Documentos{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'documents-my' %}">📄 Documentos</a>
+    <a href="{% url 'children-meus' %}">🧒 Meus Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Documentos</div>
+    <div style="display:grid; gap:12px;">
+        {% for child in children %}
+        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+            <strong>{{ child.name }}</strong> ({{ child.class_group }})
+            <div style="display:grid; gap:8px; margin-top:8px;">
+                {% for doc in docs_map|get_item:child.id %}
+                <div style="padding:8px; border:1px dashed #cbd5e1; border-radius:10px;">
+                    {{ doc.document_type.name }} — {{ doc.get_status_display }}<br>
+                    Validade: {% if doc.valid_until %}{{ doc.valid_until }}{% else %}-{% endif %}<br>
+                    {% if doc.note %}<em>Obs: {{ doc.note }}</em><br>{% endif %}
+                </div>
+                {% empty %}
+                <p style="margin:0;">Nenhum documento registrado.</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <p>Nenhum aventureiro vinculado.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

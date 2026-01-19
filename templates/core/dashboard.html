@@ -1,0 +1,53 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bem-vindo ao Clube</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@600&display=swap');
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            background: linear-gradient(140deg, #c4f1f9, #fef9e7, #ffe5f1);
+            font-family: 'Baloo 2', system-ui, sans-serif;
+            color: #0f172a;
+        }
+        .card {
+            background: #fff;
+            padding: 32px 34px;
+            border-radius: 26px;
+            box-shadow: 0 25px 60px rgba(15,23,42,0.12);
+            max-width: 560px;
+            text-align: center;
+            border: 2px solid #fef3c7;
+        }
+        h1 { margin: 0 0 12px; font-size: 2rem; }
+        p { margin: 0 0 18px; font-size: 1.05rem; }
+        a.button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            background: linear-gradient(90deg, #22c55e, #10b981);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 800;
+            box-shadow: 0 14px 30px rgba(16,185,129,0.35);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        a.button:hover { transform: translateY(-2px); box-shadow: 0 16px 36px rgba(16,185,129,0.45); }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Olá, aventureiro!</h1>
+        <p>Você entrou no acampamento. Em breve teremos trilhas, desafios e brincadeiras.</p>
+        <a href="{% url 'login' %}" class="button">Voltar para a entrada</a>
+    </div>
+</body>
+</html>

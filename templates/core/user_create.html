@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Novo usuário{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'user-list' %}">👥 Usuários</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Cadastro de usuário</div>
+    {% if messages %}
+        <ul class="messages" style="list-style:none; padding:0; margin:0 0 10px;">
+            {% for message in messages %}
+                {% if not 'auth' in message.tags %}
+                <li style="background:#ecfdf3; color:#166534; border:1px solid #86efac; padding:8px 10px; border-radius:10px; margin-bottom:6px;">
+                    {{ message }}
+                </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:520px;">
+            <label>WhatsApp
+                {{ form.whatsapp_number }}
+            </label>
+            <label>Nome
+                {{ form.first_name }}
+            </label>
+            <label>Sobrenome
+                {{ form.last_name }}
+            </label>
+            <label>Perfil
+                {{ form.role }}
+            </label>
+            <label>Perfis adicionais
+                {{ form.extra_roles }}
+            </label>
+            <label>Senha
+                {{ form.password }}
+            </label>
+            <div id="new-children-wrapper" style="display:none; border:1px solid #e2e8f0; border-radius:12px; padding:12px;">
+                <strong>Aventureiros deste responsável</strong>
+                <p style="margin:6px 0 10px; color:#475569; font-size:0.95rem;">
+                    Uma criança por linha: <code>Nome;AAAA-MM-DD</code>. A classe é calculada automaticamente
+                    (6 Abelhinhas, 7 Luminares, 8 Edificadores, 9 Mãos Ajudadoras).
+                </p>
+                {{ form.new_children }}
+            </div>
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Salvar</button>
+        </div>
+    </form>
+</div>
+<script>
+    (function() {
+        const roleSelect = document.querySelector('select[name="role"]');
+        const wrapper = document.getElementById('new-children-wrapper');
+        function toggleChildren() {
+            wrapper.style.display = roleSelect.value === 'RESPONSAVEL' ? 'block' : 'none';
+        }
+        roleSelect.addEventListener('change', toggleChildren);
+        toggleChildren();
+    })();
+</script>
+{% endblock %}

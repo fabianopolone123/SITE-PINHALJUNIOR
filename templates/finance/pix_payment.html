@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% load curriculum_extras %}
+{% block title %}Pagamento PIX{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Inicio</a>
+    <a href="{% url 'finance-my' %}">Financeiro</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Pagamento PIX</div>
+    <p style="margin-bottom:4px;"><strong>{{ child.name }}</strong> | {{ description }}</p>
+    <p style="margin-top:0; color:#475569;">Total: R$ {{ total_amount|currency_br }}</p>
+    <div style="display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); align-items:center;">
+        <div style="background:#0f172a; color:#fff; padding:18px; border-radius:14px; text-align:center;">
+            <div style="font-weight:800; margin-bottom:12px;">QR Code (placeholder)</div>
+            <div style="background:#fff; color:#0f172a; padding:18px; border-radius:12px; font-family:monospace;">
+                PIX<br>QR<br>CODE
+            </div>
+        </div>
+        <div style="display:grid; gap:12px;">
+            <div>
+                <p style="margin:0 0 6px;">Codigo PIX (copia e cola)</p>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <input type="text" id="pix-code" value="{{ pix_code }}" readonly style="flex:1; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-family:monospace;">
+                    <button type="button" id="copy-btn" style="padding:10px 14px; border:none; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:700;">Copiar</button>
+                </div>
+            </div>
+            <p style="margin:0; color:#475569;">Abra seu app bancario, cole o codigo e confirme o pagamento. Depois clique em Confirmar pagamento.</p>
+            <form method="post" action="{{ action_url }}">
+                {% csrf_token %}
+                <button type="submit" style="width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Confirmar pagamento</button>
+            </form>
+        </div>
+    </div>
+
+    <div style="margin-top:24px;">
+        <div style="font-weight:700; margin-bottom:6px;">Mensalidades nesta cobranca</div>
+        <div style="display:grid; gap:10px;">
+            {% for entry in fees %}
+            {% with fee=entry.fee %}
+            <div style="padding:10px 12px; border-radius:10px; border:1px solid #e2e8f0; background:#fff; display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;">
+                <div>
+                    <div style="font-weight:700;">{{ fee.reference_month|slice:"5:7" }}-{{ fee.reference_month|slice:"0:4" }} - R$ {{ fee.final_amount|currency_br }}</div>
+                    <small>Vencimento: {{ fee.due_date|date:"j" }} de {{ fee.due_date|date:"F" }} de {{ fee.due_date|date:"Y" }} | Status: {{ status_labels|get_item:entry.effective_status }}</small>
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const copyBtn = document.getElementById('copy-btn');
+        const codeInput = document.getElementById('pix-code');
+        if (!copyBtn || !codeInput) return;
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(codeInput.value);
+                copyBtn.textContent = 'Copiado!';
+                setTimeout(() => copyBtn.textContent = 'Copiar', 1800);
+            } catch (err) {
+                copyBtn.textContent = 'Erro';
+                setTimeout(() => copyBtn.textContent = 'Copiar', 1800);
+            }
+        });
+    });
+</script>
+{% endblock %}

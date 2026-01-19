@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Aplicar desconto{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'finance-fees' %}">💰 Mensalidades</a>
+    <a href="{% url 'finance-reports' %}">📊 Relatórios</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Desconto para {{ child.name }}</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:10px; max-width:360px;">
+            {% if open_fees %}
+            <label>Aplicar em
+                <select name="fee_id">
+                    <option value="">Todas em aberto</option>
+                    {% for fee in open_fees %}
+                        <option value="{{ fee.id }}">{{ fee.reference_month }} - R$ {{ fee.final_amount }} ({{ fee.get_status_display }})</option>
+                    {% endfor %}
+                </select>
+            </label>
+            {% else %}
+                <p>Não há mensalidades em aberto para aplicar desconto.</p>
+            {% endif %}
+            <label>Desconto % (opcional)
+                <input type="number" step="0.01" name="percent" min="0" max="100" value="{{ child.fee_discount_percent }}">
+            </label>
+            <label>Desconto em valor (R$) (opcional)
+                <input type="number" step="0.01" name="amount" min="0" value="{{ child.fee_discount_amount }}">
+            </label>
+            <button type="submit" style="padding:10px 12px; border:none; border-radius:10px; background:#22c55e; color:#fff; font-weight:800;">Aplicar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

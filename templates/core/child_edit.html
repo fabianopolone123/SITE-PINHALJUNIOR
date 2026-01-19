@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Editar aventureiro{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'user-list' %}">👥 Usuários</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Editar aventureiro</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:520px;">
+            <label>Nome
+                {{ form.name }}
+            </label>
+            <label>Data de nascimento
+                {{ form.birth_date }}
+            </label>
+            <label>Classe
+                {{ form.class_group }}
+            </label>
+            <label style="display:flex; align-items:center; gap:8px;">
+                {{ form.active }} Ativo
+            </label>
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Salvar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

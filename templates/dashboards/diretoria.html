@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Diretoria{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'user-list' %}">Usuários</a>
+    <a href="{% url 'user-list' %}" class="cta">Aprovar cadastros</a>
+    <a href="{% url 'store-manage-products' %}">Loja</a>
+    <a href="{% url 'director-reports' %}">Relatórios</a>
+    <a href="{% url 'attendance-sessions' %}">Presença</a>
+    <a href="{% url 'points-index' %}">Pontos</a>
+    <a href="{% url 'documents-overview' %}">Documentação</a>
+    <a href="{% url 'finance-fees' %}">Financeiro</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Diretoria</div>
+    <h1>Olá, {{ request.user.first_name|default:request.user.whatsapp_number }}!</h1>
+    <p>Planejamento e liderança das aventuras.</p>
+</div>
+{% endblock %}

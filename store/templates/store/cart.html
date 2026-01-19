@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Carrinho{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'store-catalog' %}">Loja</a>
+    <a href="{% url 'store-orders' %}">Meus pedidos</a>
+    <a href="{% url 'store-cart' %}">Carrinho</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Carrinho</div>
+    {% if cart and cart.items.all %}
+    <table style="width:100%; border-collapse:collapse;">
+        <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Subtotal</th><th></th></tr></thead>
+        <tbody>
+            {% for item in cart.items.all %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>
+                    {{ item.product.name }}
+                    {% if item.option %}<br><small>Opção: {{ item.option }}</small>{% endif %}
+                </td>
+                <td>{{ item.quantity }}</td>
+                <td>R$ {{ item.unit_price }}</td>
+                <td>R$ {{ item.subtotal }}</td>
+                <td><a href="{% url 'store-remove-item' item.id %}">Remover</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <p><strong>Total:</strong> R$ {{ total }}</p>
+    <form method="post" action="{% url 'store-checkout' %}">
+        {% csrf_token %}
+        <button type="submit" style="padding:10px 14px; background:#22c55e; color:#fff; border:none; border-radius:10px; font-weight:800;">Finalizar pedido</button>
+    </form>
+    {% else %}
+    <p>Carrinho vazio.</p>
+    {% endif %}
+</div>
+{% endblock %}

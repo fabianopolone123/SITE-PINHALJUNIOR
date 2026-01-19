@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Aventureiro {{ child.name }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'user-list' %}">Usuários</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Aventureiro</div>
+    <h1>{{ child.name }}</h1>
+    <p><strong>Nascimento:</strong> {{ child.birth_date }} · <strong>Turma:</strong> {{ child.class_group }}</p>
+    {% if guardians %}
+    <h3>Responsáveis</h3>
+    <ul style="padding-left:16px;">
+        {% for guardian in guardians %}
+            <li>{{ guardian.guardian_user.full_name|default:guardian.guardian_user.whatsapp_number }} ({{ guardian.relationship }})</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if fees %}
+    <h3>Mensalidades recentes</h3>
+    <ul style="padding-left:16px;">
+        {% for fee in fees %}
+            <li>{{ fee.reference_month }} — {{ fee.get_status_display }} — R$ {{ fee.final_amount|floatformat:2 }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if points_last %}
+    <h3>Pontos recentes</h3>
+    <ul style="padding-left:16px;">
+        {% for entry in points_last %}
+            <li>{{ entry.created_at }} · {{ entry.points }} pontos · {{ entry.reason }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if attendance_last %}
+    <h3>Presenças</h3>
+    <ul style="padding-left:16px;">
+        {% for attendance in attendance_last %}
+            <li>{{ attendance.marked_at }} · {{ attendance.session.name|default:'Sessão' }} · {{ attendance.status }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if documents %}
+    <h3>Documentos</h3>
+    <ul style="padding-left:16px;">
+        {% for document in documents %}
+            <li>{{ document.document_type.name }} — {{ document.get_status_display }}{% if document.valid_until %} até {{ document.valid_until }}{% endif %}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% if progress_records %}
+    <h3>Progresso</h3>
+    <ul style="padding-left:16px;">
+        {% for record in progress_records %}
+            <li>{{ record.content_item.title }} · {{ record.get_status_display }} · {{ record.marked_at }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+{% endblock %}

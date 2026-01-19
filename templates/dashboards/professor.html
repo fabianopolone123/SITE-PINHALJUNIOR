@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Professor{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'attendance-sessions' %}">📋 Presença</a>
+    <a href="{% url 'points-index' %}">⭐ Pontos</a>
+    <a href="#">📚 Atividades</a>
+    <a href="#">🧭 Trilhas</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Professor</div>
+    <h1>Olá, {{ request.user.first_name|default:request.user.whatsapp_number }}!</h1>
+    <p>Atividades e trilhas educativas.</p>
+</div>
+{% endblock %}

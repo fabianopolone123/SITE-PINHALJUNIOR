@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Pontos{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'points-index' %}">⭐ Pontos</a>
+    <a href="{% url 'points-add-individual' %}">➕ Lançar individual</a>
+    <a href="{% url 'points-add-batch' %}">🧑‍🤝‍🧑 Lançar em lote</a>
+    <a href="{% url 'points-extract' %}">📑 Extrato</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Pontos - últimos lançamentos</div>
+    <p>
+        <a href="{% url 'points-add-individual' %}">Lançar individual</a> |
+        <a href="{% url 'points-add-batch' %}">Lançar em lote</a> |
+        <a href="{% url 'points-extract' %}">Extrato</a>
+    </p>
+    <div style="display:grid; gap:10px;">
+        {% for row in recent %}
+        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+            <strong>{{ row.child.name }}</strong> — {{ row.points }} pts<br>
+            Motivo: {{ row.reason }}<br>
+            Em {{ row.created_at|date:"d/m/Y H:i" }} por {{ row.created_by_user }}
+        </div>
+        {% empty %}
+        <p>Nenhum lançamento ainda.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

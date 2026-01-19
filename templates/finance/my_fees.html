@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load curriculum_extras %}
+{% block title %}Financeiro{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'finance-my' %}">Financeiro</a>
+    <a href="{% url 'children-meus' %}">Meus Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Mensalidades</div>
+    <div style="display:grid; gap:16px;">
+        {% for block in child_finances %}
+        <div style="padding:16px; border:1px solid #e2e8f0; border-radius:14px; background:#f8fafc;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                <div>
+                    <strong>{{ block.child.name }}</strong> {% if block.child.class_group %}({{ block.child.class_group }}){% endif %}
+                </div>
+                {% if block.open_total > 0 %}
+                    <a href="{% url 'finance-pay-all-open' block.child.id %}" style="padding:10px 14px; border-radius:12px; background:#1d4ed8; color:#fff; font-weight:700; text-decoration:none;">
+                        Pagar todos em aberto ({{ block.open_entries|length }}) - Total R$ {{ block.open_total|currency_br }}
+                    </a>
+                {% endif %}
+            </div>
+            <div style="display:grid; gap:12px; margin-top:12px;">
+                {% if block.entries %}
+                    {% for fee_entry in block.entries %}
+                        {% with fee=fee_entry.fee %}
+                        <div style="padding:12px; border-radius:12px; border:1px dashed #cbd5e1; {% if fee_entry.is_open %}background:linear-gradient(180deg,#ffe5e5,#ffd1d1); border-color:#ef4444;{% else %}background:#fff;{% endif %} display:flex; flex-direction:column; gap:6px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                                <div>
+                                    <div style="font-weight:700;">
+                                        {{ fee.reference_month|slice:"5:7" }}-{{ fee.reference_month|slice:"0:4" }} - Valor: R$ {{ fee.amount|currency_br }} | Final: R$ {{ fee.final_amount|currency_br }}
+                                    </div>
+                                    <small>
+                                        Vencimento: {{ fee.due_date|date:"j" }} de {{ fee.due_date|date:"F" }} de {{ fee.due_date|date:"Y" }} | Status: {{ status_labels|get_item:fee_entry.effective_status }}
+                                    </small>
+                                </div>
+                                {% if fee.status != 'PAGO' %}
+                                    <a href="{% url 'finance-fee-payment' block.child.id fee.id %}" style="padding:8px 12px; border-radius:10px; background:#22c55e; color:#fff; font-weight:700; text-decoration:none;">Pagar</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endwith %}
+                    {% endfor %}
+                {% else %}
+                    <p style="margin:0;">Nenhuma mensalidade cadastrada.</p>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p>Nenhum aventureiro vinculado.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

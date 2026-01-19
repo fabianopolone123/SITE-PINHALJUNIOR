@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Documentação{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'documents-overview' %}">📄 Documentação</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Visão geral de documentos</div>
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Turma</th><th>Criança</th><th>Documento</th><th>Status</th><th>Validade</th><th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for doc in docs %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ doc.child.class_group }}</td>
+                <td>{{ doc.child.name }}</td>
+                <td>{{ doc.document_type.name }}</td>
+                <td>{{ doc.get_status_display }}</td>
+                <td>{% if doc.valid_until %}{{ doc.valid_until }}{% else %}-{% endif %}</td>
+                <td><a href="{% url 'documents-child' doc.child.id %}">Detalhe</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6">Nenhum documento cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

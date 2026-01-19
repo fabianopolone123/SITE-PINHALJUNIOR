@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Presença dos meus aventureiros{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'attendance-my' %}">📋 Presença</a>
+    <a href="{% url 'children-meus' %}">🧒 Meus Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Presença dos meus aventureiros</div>
+    <div style="display:grid; gap:12px;">
+        {% for rec in records %}
+        <div style="padding:12px; border:1px solid #e2e8f0; border-radius:12px; background:#f8fafc;">
+            <strong>{{ rec.child.name }}</strong><br>
+            Data: {{ rec.session.date }} | Tipo: {{ rec.session.get_type_display }} | Turma: {{ rec.session.class_group }}<br>
+            Presença: {% if rec.present %}Presente{% else %}Ausente{% endif %}<br>
+            {% if rec.note %}<em>Obs: {{ rec.note }}</em>{% endif %}
+        </div>
+        {% empty %}
+        <p>Nenhum registro de presença encontrado.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

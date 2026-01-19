@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Mensalidades{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'finance-fees' %}">💰 Mensalidades</a>
+    <a href="{% url 'finance-reports' %}">📊 Relatórios</a>
+    <a href="#">🎟️ Eventos (futuro)</a>
+    <a href="#">🛍️ Lojinha (futuro)</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Mensalidades</div>
+    <form method="get" style="display:grid; gap:10px; max-width:480px; margin-bottom:12px;">
+        {{ form.as_p }}
+        <button type="submit" style="padding:10px 12px; border:none; border-radius:10px; background:#e2e8f0; font-weight:700;">Filtrar</button>
+    </form>
+    <table style="width:100%; border-collapse: collapse;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Criança</th><th>Mês</th><th>Valor</th><th>Desconto</th><th>Final</th><th>Vencimento</th><th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for fee in fees %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td><a href="{% url 'finance-child-fees' fee.child.id %}">{{ fee.child.name }}</a></td>
+                <td>{{ fee.reference_month }}</td>
+                <td>R$ {{ fee.amount }}</td>
+                <td>R$ {{ fee.discount_amount }}</td>
+                <td>R$ {{ fee.final_amount }}</td>
+                <td>{{ fee.due_date }}</td>
+                <td>{{ fee.effective_status|default:fee.status }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">Nenhuma mensalidade.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

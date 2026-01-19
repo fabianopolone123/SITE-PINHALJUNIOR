@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'curriculum-content' %}">📘 Conteúdos</a>
+    <a href="{% url 'curriculum-schedule' %}">🗓️ Cronograma</a>
+    <a href="{% url 'curriculum-progress' %}">✅ Progresso</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">{{ title }}</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:520px;">
+            {{ form.as_p }}
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#0ea5e9,#22d3ee); color:#fff; font-weight:800;">Salvar</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

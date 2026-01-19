@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Aventureiros{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'children-vinculos' %}">🔗 Vínculos</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Lista de Aventureiros</div>
+    <a href="{% url 'children-create' %}" style="float:right; text-decoration:none; background:#22c55e; color:#fff; padding:10px 14px; border-radius:10px; font-weight:800;">+ Novo</a>
+    <table style="width:100%; border-collapse: collapse; margin-top:16px;">
+        <thead>
+            <tr style="text-align:left;">
+                <th>Nome</th>
+                <th>Turma</th>
+                <th>Nascimento</th>
+                <th>Ativo</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for child in children %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ child.name }}</td>
+                <td>{{ child.class_group }}</td>
+                <td>{{ child.birth_date }}</td>
+                <td>{{ child.active|yesno:"Sim,Não" }}</td>
+                <td><a href="{% url 'children-edit' child.pk %}">Editar</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Nenhum aventureiro cadastrado.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

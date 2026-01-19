@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Lançar pontos em lote{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'points-index' %}">⭐ Pontos</a>
+    <a href="{% url 'points-add-individual' %}">➕ Lançar individual</a>
+    <a href="{% url 'children-list' %}">🧒 Aventureiros</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Lançar pontos em lote</div>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:grid; gap:12px; max-width:520px;">
+            {{ form.as_p }}
+            <div>
+                <strong>Crianças ({{ selected_class|default:'Todas as classes' }}):</strong>
+                <div style="display:grid; gap:6px; max-height:260px; overflow:auto; border:1px solid #e2e8f0; padding:8px; border-radius:10px;">
+                    {% for child in children %}
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" name="children" value="{{ child.id }}" checked>
+                        {{ child.name }}
+                    </label>
+                    {% empty %}
+                    <p>Nenhuma criança nesta turma.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#0ea5e9,#22d3ee); color:#fff; font-weight:800;">Lançar em lote</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

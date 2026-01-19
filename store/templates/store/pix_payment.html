@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Pagamento PIX{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'store-orders' %}">Pedidos</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Pagamento PIX</div>
+    <p><strong>Pedido:</strong> {{ order.id }} | Total: R$ {{ order.total }}</p>
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap:16px; align-items:center;">
+        <div style="background:#0f172a; color:#fff; padding:16px; border-radius:12px; text-align:center;">
+            <div style="font-weight:800; margin-bottom:8px;">QR Code (placeholder)</div>
+            <div style="background:#fff; color:#0f172a; padding:14px; border-radius:10px; font-family:monospace;">
+                PIX<br>QR<br>CODE
+            </div>
+        </div>
+        <div>
+            <p>Código PIX (copia e cola):</p>
+            <div style="display:flex; gap:6px; align-items:center;">
+                <input type="text" id="pix-code" value="{{ pix_code }}" readonly style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:10px;">
+                <button type="button" id="copy-btn" style="padding:10px 12px; border:none; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:800;">Copiar</button>
+            </div>
+            <p style="margin-top:8px; color:#475569;">Finalize o pagamento no app do banco e depois clique em "Confirmar pagamento".</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" style="padding:12px 14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Confirmar pagamento</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btn = document.getElementById('copy-btn');
+        const code = document.getElementById('pix-code');
+        btn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(code.value);
+                btn.textContent = 'Copiado!';
+                setTimeout(() => btn.textContent = 'Copiar', 2000);
+            } catch (e) {
+                btn.textContent = 'Erro';
+            }
+        });
+    });
+</script>
+{% endblock %}

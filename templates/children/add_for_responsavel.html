@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adicionar Aventureiro</title>
+    <style>
+        :root { --gap:16px; --border:#d7dee9; }
+        body { margin:0; font-family:'Segoe UI', system-ui, sans-serif; background:linear-gradient(135deg,#e0f2fe,#ecfeff,#eef2ff); color:#0f172a; }
+        .wrap { max-width:1200px; margin:32px auto; padding:0 18px 32px; }
+        .panel { background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:0 18px 40px rgba(15,23,42,0.12); overflow:hidden; }
+        .panel-header { padding:16px 20px; background:#f8fafc; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:10px; }
+        .badge { background:#6366f1; color:#fff; padding:8px 12px; border-radius:10px; font-weight:800; }
+        .panel-body { padding:22px; display:grid; gap:20px; }
+        h2 { margin:0; font-size:1.3rem; }
+        h3 { margin:0; font-size:1.05rem; }
+        .section { border:1px solid var(--border); padding:18px; border-radius:10px; background:#f8fafc; display:grid; gap:var(--gap); }
+        .row { display:grid; gap:var(--gap); grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); }
+        .row-wide { display:grid; gap:var(--gap); grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+        .row-auth { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+        .full { grid-column:1/-1; }
+        label { font-weight:700; display:block; font-size:0.95rem; margin-bottom:4px; }
+        input, select, textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:0; background:#fff; font-size:1rem; box-sizing:border-box; }
+        textarea { resize:vertical; min-height:90px; }
+        .actions { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
+        .btn { border:none; border-radius:10px; padding:12px 16px; font-weight:800; cursor:pointer; transition:transform 0.1s ease, box-shadow 0.1s ease; }
+        .btn-primary { background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; }
+        .btn-secondary { background:linear-gradient(90deg,#0ea5e9,#06b6d4); color:#fff; }
+        .btn-danger { background:#f87171; color:#fff; }
+        .btn:hover { transform: translateY(-1px); box-shadow:0 10px 18px rgba(15,23,42,0.12); }
+        .pill { display:inline-block; padding:6px 10px; border-radius:999px; background:#e0f2fe; font-weight:700; font-size:0.9rem; color:#0f172a; }
+        .messages { list-style:none; padding:0; margin:0 0 12px; }
+        .messages li { background:#fff4e5; color:#b45309; border:1px solid #fcd34d; padding:10px 12px; border-radius:10px; margin-bottom:8px; }
+        .child-card { background:#fff; border:1px solid var(--border); padding:18px; border-radius:10px; display:grid; gap:var(--gap); }
+        .stacked { display:grid; gap:14px; }
+        @media (max-width: 720px) {
+            .panel-body { padding:14px; }
+            .section, .child-card { padding:12px; }
+            .actions { flex-direction:column; align-items:flex-start; }
+            .btn { width:100%; text-align:center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="panel">
+            <div class="panel-header">
+                <div class="badge">Novo Aventureiro</div>
+                <div style="font-weight:700;">Cadastre um filho rápido</div>
+            </div>
+            <div class="panel-body">
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+                <form method="post" class="stacked">
+                    {% csrf_token %}
+                    <div class="section" style="gap:14px;">
+                        <div class="actions">
+                            <div style="display:flex; gap:8px; align-items:center;">
+                                <h2 style="margin:0;">Aventureiros</h2>
+                                <span class="pill">Adicione quantos precisar</span>
+                            </div>
+                            <button type="button" id="add-child" class="btn btn-secondary">+ Aventureiro</button>
+                        </div>
+                        <div id="child-rows" class="stacked"></div>
+                    </div>
+                    <div class="actions" style="justify-content:flex-end;">
+                        <button type="submit" class="btn btn-primary">Salvar aventureiros</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('child-rows');
+    const addBtn = document.getElementById('add-child');
+    let childIndexCounter = 0;
+
+    const toggleParentFields = (checkbox, selectors) => {
+        if (!checkbox) return;
+        const toggle = () => {
+            selectors.forEach((field) => {
+                field.disabled = checkbox.checked;
+            });
+        };
+        toggle();
+        checkbox.addEventListener('change', toggle);
+    };
+
+    function addChild() {
+        const cardIndex = childIndexCounter++;
+        const card = document.createElement('div');
+        card.className = 'child-card';
+        card.innerHTML = `
+            <div class="actions">
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <h3>Aventureiro</h3>
+                    <span class="pill">Dados básicos</span>
+                </div>
+                <button type="button" class="btn btn-danger btn-sm" style="padding:8px 10px;">Remover</button>
+            </div>
+            <div class="row-wide">
+                <div><label>Nome<input name="child_name" required placeholder="Primeiro nome"></label></div>
+                <div><label>Sobrenome<input name="child_last" placeholder="Sobrenome"></label></div>
+                <div><label>Nascimento<input type="date" name="child_birth" required></label></div>
+                <div><label>Sexo
+                    <select name="child_gender">
+                        <option value="">Selecione</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                    </select>
+                </label></div>
+                <div><label>CPF (opcional)<input name="child_cpf"></label></div>
+            </div>
+            <div class="row-wide">
+                <div><label>Certidão de nascimento (se CPF/RG não existir)<input name="child_birth_certificate"></label></div>
+            </div>
+            <div class="row-wide">
+                <div><label>Nome completo do pai<input name="child_father_name"></label></div>
+                <div><label>CPF do pai<input name="child_father_cpf"></label></div>
+                <div><label>Telefone do pai<input name="child_father_phone"></label></div>
+                <div>
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" name="child_father_absent" value="${cardIndex}"> Pai ausente/desconhecido
+                    </label>
+                </div>
+            </div>
+            <div class="row-wide">
+                <div><label>Nome completo da mae<input name="child_mother_name"></label></div>
+                <div><label>CPF da mae<input name="child_mother_cpf"></label></div>
+                <div><label>Telefone da mae<input name="child_mother_phone"></label></div>
+                <div>
+                    <label style="display:flex; align-items:center; gap:8px;">
+                        <input type="checkbox" name="child_mother_absent" value="${cardIndex}"> Mae ausente/desconhecido
+                    </label>
+                </div>
+            </div>
+            <div class="row">
+                <div><label>Alergias<textarea name="child_allergies" rows="3"></textarea></label></div>
+                <div><label>Medicamentos contínuos<textarea name="child_meds" rows="3"></textarea></label></div>
+            </div>
+            <div class="row">
+                <div><label>Restrições<textarea name="child_restr" rows="3"></textarea></label></div>
+                <div><label>Observações<textarea name="child_obs" rows="3"></textarea></label></div>
+            </div>
+            <div class="row-wide">
+                <div><label>Contato emergência<input name="child_emerg" placeholder="Nome do contato"></label></div>
+                <div><label>Fone emergência<input name="child_emerg_phone" placeholder="WhatsApp do contato"></label></div>
+                <div><label>Plano de saúde<input name="child_plan"></label></div>
+            </div>
+            <div class="row-auth">
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_activity" value="on" required> Autoriza participação em atividades</label>
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_medical" value="on" required> Autoriza atendimento médico</label>
+                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_rules" value="on" required> Aceita regulamento</label>
+            </div>
+        `;
+        card.querySelector('.btn-danger').addEventListener('click', () => card.remove());
+        toggleParentFields(
+            card.querySelector('[name="child_father_absent"]'),
+            Array.from(card.querySelectorAll('[name="child_father_name"], [name="child_father_cpf"], [name="child_father_phone"]')),
+        );
+        toggleParentFields(
+            card.querySelector('[name="child_mother_absent"]'),
+            Array.from(card.querySelectorAll('[name="child_mother_name"], [name="child_mother_cpf"], [name="child_mother_phone"]')),
+        );
+        container.appendChild(card);
+    }
+
+    addBtn.addEventListener('click', () => addChild());
+    addChild();
+});
+</script>
+</body>
+</html>

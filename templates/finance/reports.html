@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Relatórios{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">🏠 Início</a>
+    <a href="{% url 'finance-fees' %}">💰 Mensalidades</a>
+    <a href="{% url 'finance-reports' %}">📊 Relatórios</a>
+    <a href="#">🎟️ Eventos (futuro)</a>
+    <a href="#">🛍️ Lojinha (futuro)</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Resumo</div>
+    <ul>
+        <li>Total: {{ total }}</li>
+        <li>Pagos: {{ pagos }}</li>
+        <li>Pendentes: {{ pendentes }}</li>
+        <li>Atrasados (pendentes vencidos): {{ atrasados }}</li>
+    </ul>
+</div>
+{% endblock %}

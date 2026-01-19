@@ -1,0 +1,506 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Clube de Aventureiros Pinhal Júnior</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Baloo+2:wght@500;700&display=swap');
+
+        :root {
+            --sky: #a0e9ff;
+            --ocean: #4dc0ff;
+            --sun: #ffbe0b;
+            --berry: #ff5d8f;
+            --leaf: #5ad18e;
+            --text: #0f172a;
+            --card: #ffffffee;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fef6e4 0%, #dff6ff 35%, #f4e0ff 100%);
+            font-family: 'Baloo 2', 'Fredoka', system-ui, -apple-system, sans-serif;
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        .scene {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle at 30% 30%, #fff0, #fff0 45%, #fff3 50%, #fff0 55%), linear-gradient(140deg, var(--ocean), #8ddcff, #ffd6ff);
+            border-radius: 40% 60% 55% 45%;
+            filter: blur(30px);
+            opacity: 0.45;
+            animation: floaty 12s ease-in-out infinite;
+        }
+
+        .blob.b2 { width: 420px; height: 420px; top: -80px; right: -120px; animation-delay: 2s; background: linear-gradient(140deg, #ff9ecd, #ffd166, #fff5d7); }
+        .blob.b3 { width: 360px; height: 360px; bottom: -120px; left: -60px; animation-delay: 4s; background: linear-gradient(140deg, #c4f8e3, #9bf6ff, #ffc6ff); }
+
+        .cloud {
+            position: absolute;
+            background: #fff;
+            border-radius: 50px;
+            filter: drop-shadow(0 15px 25px rgba(0,0,0,0.08));
+            opacity: 0.85;
+            animation: drift 18s linear infinite;
+        }
+        .cloud::after, .cloud::before {
+            content: '';
+            position: absolute;
+            background: #fff;
+            border-radius: 50px;
+        }
+        .cloud::before { width: 70%; height: 70%; top: -25px; left: 10px; }
+        .cloud::after { width: 55%; height: 55%; top: -18px; right: 12px; }
+        .cloud.c1 { width: 180px; height: 70px; top: 12%; left: 8%; animation-duration: 22s; }
+        .cloud.c2 { width: 140px; height: 60px; top: 22%; right: 10%; animation-duration: 20s; }
+        .cloud.c3 { width: 120px; height: 52px; top: 35%; left: 18%; animation-duration: 24s; animation-direction: reverse; }
+
+        .container {
+            width: min(960px, 92vw);
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero {
+            background: var(--card);
+            border-radius: 28px;
+            padding: 38px;
+            box-shadow: 0 30px 80px rgba(16, 24, 40, 0.12);
+            border: 2px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(4px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, rgba(93, 220, 255, 0.35), rgba(93, 220, 255, 0));
+            top: -60px;
+            right: -40px;
+            filter: blur(6px);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #ffe17a, #ff8fab);
+            color: #1f2937;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            font-size: 0.95rem;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+        }
+
+        .title {
+            margin: 18px 0 6px;
+            font-size: clamp(2.1rem, 4vw, 2.8rem);
+            line-height: 1.1;
+        }
+
+        .subtitle {
+            color: #334155;
+            font-size: 1.05rem;
+            margin: 0 0 22px;
+        }
+
+        .slider {
+            position: relative;
+            margin-top: 22px;
+            overflow: hidden;
+        }
+        .slides {
+            display: flex;
+            gap: 0;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+        .slides::-webkit-scrollbar { height: 0; width: 0; display: none; }
+        .slide {
+            min-width: 100%;
+            background: #fff;
+            border-radius: 18px;
+            padding: 18px;
+            display: grid;
+            gap: 8px;
+            box-shadow: 0 10px 35px rgba(15, 23, 42, 0.08);
+            border: 1px solid rgba(255,255,255,0.7);
+            scroll-snap-align: start;
+            animation: pop 0.7s ease forwards;
+            opacity: 0;
+            transition: transform 0.55s ease, opacity 0.55s ease, box-shadow 0.55s ease;
+            transform: scale(0.96);
+            opacity: 0.78;
+        }
+        .slide .emoji {
+            width: 52px;
+            height: 52px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            font-size: 1.6rem;
+            background: #f8fbff;
+            border: 1px dashed #cbd5e1;
+        }
+        .slide strong { font-size: 1.12rem; }
+        .slide small { color: #475569; line-height: 1.5; display: block; font-size: 1.02rem; }
+        .slide.active {
+            transform: scale(1);
+            opacity: 1;
+            box-shadow: 0 16px 48px rgba(15, 23, 42, 0.14);
+        }
+
+        .form-card {
+            background: #0b5ed7;
+            background: linear-gradient(160deg, #0fa3ff, #4cd3ff, #66ffaa);
+            border-radius: 28px;
+            padding: 34px;
+            box-shadow: 0 30px 80px rgba(14, 165, 233, 0.4);
+            color: #0b132b;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            width: 180%;
+            height: 180%;
+            background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.38), transparent 35%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.32), transparent 40%);
+            top: -60%;
+            left: -40%;
+            transform: rotate(8deg);
+            opacity: 0.7;
+        }
+
+        .form-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            width: 100%;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 420px;
+            align-self: center;
+            align-items: stretch;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #0f172a;
+            display: block;
+            margin-bottom: 6px;
+            text-align: left;
+        }
+
+        .form-field input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 2px solid rgba(255,255,255,0.65);
+            background: rgba(255,255,255,0.9);
+            font-size: 1rem;
+            transition: 0.2s ease;
+            color: #0f172a;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+        .form-field input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 6px rgba(14,165,233,0.18);
+        }
+
+        .submit {
+            margin-top: 6px;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 16px;
+            background: linear-gradient(90deg, #ff9f1c, #ff6f91);
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 14px 35px rgba(255,111,145,0.45);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+        .submit:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 18px 45px rgba(255,111,145,0.55); }
+        .submit:active { transform: translateY(0px) scale(0.99); }
+
+        .tiny {
+            margin-top: 6px;
+            font-size: 0.92rem;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 6px;
+        }
+        .messages li {
+            background: #fffbea;
+            color: #92400e;
+            border-radius: 12px;
+            padding: 10px 12px;
+            font-weight: 700;
+            border: 1px solid #fcd34d;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        .messages li.success {
+            background: #ecfdf3;
+            color: #166534;
+            border-color: #86efac;
+        }
+
+        .sparkles {
+            position: absolute;
+            inset: 12px;
+            pointer-events: none;
+            opacity: 0.65;
+        }
+        .sparkles span {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #fff7;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite alternate;
+        }
+        .sparkles span:nth-child(1) { top: 12%; left: 18%; animation-delay: 0.2s; }
+        .sparkles span:nth-child(2) { top: 28%; right: 16%; animation-delay: 0.6s; width: 14px; height: 14px; }
+        .sparkles span:nth-child(3) { bottom: 16%; left: 10%; animation-delay: 1s; }
+        .sparkles span:nth-child(4) { bottom: 8%; right: 12%; animation-delay: 1.3s; width: 8px; height: 8px; }
+
+        @keyframes floaty { 0%, 100% { transform: translateY(-10px); } 50% { transform: translateY(16px); } }
+        @keyframes drift { 0% { transform: translateX(-20px); } 100% { transform: translateX(40px); } }
+        @keyframes twinkle { from { opacity: 0.35; transform: scale(0.8); } to { opacity: 1; transform: scale(1.1); } }
+        @keyframes pop { from { transform: translateY(8px) scale(0.96); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+
+        @media (max-width: 940px) {
+            .container { grid-template-columns: 1fr; }
+            .hero { order: 2; }
+            .form-card { order: 1; }
+        }
+
+        @media (max-width: 640px) {
+            body { padding: 20px 12px; }
+            .hero, .form-card { padding: 26px; }
+            .illustration { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+    <div class="scene">
+        <div class="blob"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+        <div class="cloud c3"></div>
+    </div>
+
+    <main class="container">
+        <section class="hero">
+            <div class="badge">🌟 Clube de Aventureiros Pinhal Júnior</div>
+            <h1 class="title">Sejam bem-vindos!</h1>
+            <p class="subtitle">Turminha pronta para explorar, brincar e aprender com muita alegria.</p>
+            <div class="slider">
+                <div class="slides">
+                    <div class="slide">
+                        <div class="emoji">🌟</div>
+                        <div>
+                            <strong>Voto do Aventureiro</strong>
+                            <small>“Por amor a Jesus, farei sempre o meu melhor.”</small>
+                            <small>Fazer o bem por amor e tentar mesmo errando.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">🎯</div>
+                        <div>
+                            <strong>Ser obediente</strong>
+                            <small>Ouvir pais, líderes e professores.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">🕊️</div>
+                        <div>
+                            <strong>Ser puro</strong>
+                            <small>Pensar, falar e agir do jeitinho certo.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">🤝</div>
+                        <div>
+                            <strong>Ser leal</strong>
+                            <small>Ser honesto, verdadeiro e fiel.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">💛</div>
+                        <div>
+                            <strong>Ser gentil</strong>
+                            <small>Tratar todos com amor e respeito.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">🌿</div>
+                        <div>
+                            <strong>Ser respeitoso</strong>
+                            <small>Respeitar pessoas, regras e a natureza.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">🙌</div>
+                        <div>
+                            <strong>Ser participativo</strong>
+                            <small>Ajudar, colaborar e brincar em equipe.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">✋</div>
+                        <div>
+                            <strong>Voto à Bíblia</strong>
+                            <small>“Prometo fidelidade à Bíblia, Sua mensagem tornarei regra do meu viver.”</small>
+                            <small>A Bíblia como mapa para a aventura.</small>
+                        </div>
+                    </div>
+                    <div class="slide">
+                        <div class="emoji">🌍</div>
+                        <div>
+                            <strong>Voto à Bandeira</strong>
+                            <small>“Prometo fidelidade à minha bandeira e ao país que ela representa.”</small>
+                            <small>Amor ao país, respeito às leis e boa convivência.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-card">
+            <div class="sparkles">
+                <span></span><span></span><span></span><span></span>
+            </div>
+            <div class="form-content">
+                <h2 style="margin: 0 0 8px; font-size: 1.6rem;">Entrar</h2>
+
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            {% if forloop.last %}
+                                <li class="{{ message.tags }}">{{ message }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                    <div class="form-field">
+                        <label for="{{ form.whatsapp_number.id_for_label }}">Número de WhatsApp</label>
+                        {{ form.whatsapp_number }}
+                        {% if form.whatsapp_number.errors %}
+                            <small style="color:#b91c1c;">{{ form.whatsapp_number.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="form-field">
+                        <label for="{{ form.password.id_for_label }}">Senha</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                            <small style="color:#b91c1c;">{{ form.password.errors.0 }}</small>
+                        {% endif %}
+                    </div>
+                    <button type="submit" class="submit">Entrar</button>
+                    <p style="margin-top:10px; text-align:center;">
+                        Não tem conta? <a href="{% url 'signup' %}" style="color:#0ea5e9; font-weight:800;">Cadastre-se</a>
+                    </p>
+                </form>
+            </div>
+        </section>
+    </main>
+    <script>
+        (function () {
+            const slides = document.querySelector('.slides');
+            if (!slides) return;
+            const cards = Array.from(slides.children);
+            if (cards.length === 0) return;
+
+            let index = 0;
+            const setActive = (i) => {
+                cards.forEach((c, idx) => c.classList.toggle('active', idx === i));
+            };
+            setActive(index);
+
+            const goNext = () => {
+                index = (index + 1) % cards.length;
+                const target = cards[index];
+                slides.scrollTo({ left: target.offsetLeft, behavior: 'smooth' });
+                setActive(index);
+            };
+            setInterval(goNext, 3200);
+
+            // Se o usuário rolar manualmente, ajusta o ativo conforme a posição
+            let scrollTimeout;
+            slides.addEventListener('scroll', () => {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    const mid = slides.scrollLeft + slides.clientWidth / 2;
+                    const nearest = cards.reduce((acc, card, idx) => {
+                        const center = card.offsetLeft + card.clientWidth / 2;
+                        const dist = Math.abs(center - mid);
+                        return dist < acc.dist ? { dist, idx } : acc;
+                    }, { dist: Infinity, idx: 0 });
+                    index = nearest.idx;
+                    setActive(index);
+                }, 80);
+            });
+        })();
+    </script>
+</body>
+</html>

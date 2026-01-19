@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Produtos{% endblock %}
+{% block menu %}
+    <a href="{% url 'dashboard' %}">Início</a>
+    <a href="{% url 'store-manage-products' %}">Loja (gestão)</a>
+    <a href="{% url 'store-manage-orders' %}">Pedidos</a>
+    <a href="{% url 'logout' %}">Sair</a>
+{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="chip">Produtos</div>
+    <p><a href="{% url 'store-product-create' %}">+ Novo produto</a></p>
+    <table style="width:100%; border-collapse:collapse;">
+        <thead><tr><th>Nome</th><th>Preço</th><th>Estoque</th><th>Ativo</th><th></th></tr></thead>
+        <tbody>
+            {% for p in products %}
+            <tr style="border-top:1px solid #e2e8f0;">
+                <td>{{ p.name }}</td>
+                <td>R$ {{ p.price }}</td>
+                <td>{{ p.stock }}</td>
+                <td>{{ p.active }}</td>
+                <td><a href="{% url 'store-product-edit' p.id %}">Editar</a></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">Nenhum produto.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
