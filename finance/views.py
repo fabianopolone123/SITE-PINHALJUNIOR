@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -65,7 +66,14 @@ def fees_list(request):
         if ref:
             qs = qs.filter(reference_month=ref)
         if status:
-            qs = qs.filter(status=status)
+            if status == Fee.Status.ATRASADO:
+                today = date.today()
+                qs = qs.filter(
+                    Q(status=Fee.Status.ATRASADO)
+                    | (Q(status=Fee.Status.PENDENTE) & Q(due_date__lt=today))
+                )
+            else:
+                qs = qs.filter(status=status)
         if class_group:
             qs = qs.filter(child__class_group=class_group)
     fees = list(qs.order_by('child__name'))
