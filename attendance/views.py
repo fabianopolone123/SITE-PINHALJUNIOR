@@ -17,6 +17,7 @@ STAFF_ROLES = [
     User.Role.SECRETARIA,
     User.Role.TESOUREIRO,
     User.Role.PROFESSOR,
+    User.Role.ADM,
 ]
 
 
