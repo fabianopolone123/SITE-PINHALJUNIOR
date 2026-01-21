@@ -71,6 +71,9 @@
         .messages { list-style:none; padding:0; margin:0 0 12px; }
         .messages li { background:#fff4e5; color:#b45309; border:1px solid #fcd34d; padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .child-card { background:#fff; border:1px solid var(--border); padding:18px; border-radius:10px; display:grid; gap:var(--gap); }
+        label.required { position:relative; font-weight:700; }
+        label.required::after { content:' *'; color:#dc2626; }
+        input:disabled, textarea:disabled, select:disabled { background:#f1f5f9; color:#94a3b8; border-color:#cbd5e1; }
         .child-photo-field { display:grid; gap:8px; }
         .child-photo-select { display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; }
         .child-photo-select input[type="file"] { display:none; }
@@ -79,6 +82,9 @@
         .child-photo-preview span { font-size:0.8rem; color:#475569; text-align:center; padding:0 6px; }
         .child-photo-preview img { display:none; width:100%; height:100%; object-fit:cover; }
         .child-photo-note { font-size:0.85rem; color:#475569; }
+        .child-photo-area { display:flex; align-items:center; gap:20px; }
+        .child-photo-area .child-photo-preview { width:150px; height:210px; }
+        .child-photo-area .child-photo-field { flex:1; }
         .stacked { display:grid; gap:14px; }
         .field-error {
             border-color: #ef4444;
@@ -99,6 +105,8 @@
             .section, .child-card { padding:12px; }
             .actions { flex-direction:column; align-items:flex-start; }
             .btn { width:100%; text-align:center; }
+            .child-photo-area { flex-direction:column; align-items:flex-start; }
+            .child-photo-area .child-photo-preview { width:100%; max-width:220px; height:auto; min-height:180px; }
         }
     </style>
 </head>
@@ -146,33 +154,30 @@
                             <span class="pill">Cadastro rápido</span>
                         </div>
                         <div class="row-wide">
-                            <div>
-                                <label>Nome<input type="text" id="dir-name" name="dir_name" list="directoria-names"></label>
-                            </div>
-                            <div>
-                                <label>Sobrenome<input type="text" name="dir_last"></label>
-                            </div>
+                        <div>
+                            <label class="required">Nome<input type="text" id="dir-name" name="dir_name" list="directoria-names" required></label>
+                        </div>
+                        <div>
+                            <label>Sobrenome<input type="text" name="dir_last"></label>
+                        </div>
                             <datalist id="directoria-names">
                                 {% for candidate in directoria_candidates %}
                                     <option value="{{ candidate.first_name }} {{ candidate.last_name }}" data-whatsapp="{{ candidate.whatsapp_number }}" data-email="{{ candidate.email }}"></option>
                                 {% endfor %}
                             </datalist>
-                            <div>
-                                <label>WhatsApp<input type="text" id="dir-whatsapp" name="dir_whatsapp"></label>
-                            </div>
-                            <div>
-                                <label>E-mail<input type="email" id="dir-email" name="dir_email"></label>
-                            </div>
-                            <div>
-                                <label>Endereço<input type="text" id="dir-address" name="dir_address"></label>
-                            </div>
+                        <div>
+                            <label class="required">WhatsApp<input type="text" id="dir-whatsapp" name="dir_whatsapp" required></label>
+                        </div>
+                        <div>
+                            <label>Endereço completo<input type="text" id="dir-address" name="dir_address"></label>
+                        </div>
                         </div>
                         <div class="row-wide">
                             <div>
-                                <label>Senha<input type="password" name="dir_password" required></label>
+                                <label class="required">Senha<input type="password" name="dir_password" required></label>
                             </div>
                             <div>
-                                <label>Confirme a senha<input type="password" name="dir_password_confirm" required></label>
+                                <label class="required">Confirme a senha<input type="password" name="dir_password_confirm" required></label>
                             </div>
                         </div>
                         <div>
@@ -188,42 +193,41 @@
                     </div>
 
                     <div id="responsavel-section">
-                        <div class="section">
-                            <div class="actions" style="gap:6px;">
-                                <h2>Responsavel</h2>
-                                <span class="pill">Login</span>
-                            </div>
-                            <div class="row-wide">
-                                <div><label>Nome<input type="text" name="resp_name" required></label></div>
-                                <div><label>Sobrenome<input type="text" name="resp_last"></label></div>
-                                <div><label>CPF (obrigatorio)<input type="text" name="resp_cpf" required></label></div>
-                            </div>
-                            <div class="row-wide">
-                                <div><label>WhatsApp (login)<input type="text" name="resp_whatsapp" required></label></div>
-                                <div><label>WhatsApp financeiro<input type="text" name="resp_fin_whatsapp" placeholder="WhatsApp do responsável financeiro"></label></div>
-                                <div><label>Telefone financeiro<input type="text" name="resp_fin_phone" placeholder="Telefone do responsável financeiro"></label></div>
-                                <div><label>E-mail<input type="email" name="resp_email"></label></div>
-                            </div>
-                            <div class="row-wide">
-                                <div><label>Endereço<input type="text" name="resp_address"></label></div>
-                            </div>
-                            <div class="row-wide">
-                                <div><label>Senha<input type="password" name="resp_password" required></label></div>
-                                <div><label>Repita a senha<input type="password" name="resp_password_confirm" required></label></div>
-                            </div>
-                        </div>
+            <div class="section">
+                <div class="actions" style="gap:6px;">
+                    <h2>Responsavel</h2>
+                    <span class="pill">Login</span>
+                </div>
+                <div class="row-wide">
+                    <div><label class="required">Nome completo<input type="text" name="resp_name" required></label></div>
+                    <div><label class="required">Sobrenome<input type="text" name="resp_last" required></label></div>
+                    <div><label class="required">CPF (obrigatorio)<input type="text" name="resp_cpf" required></label></div>
+                </div>
+                <div class="row-wide">
+                    <div><label class="required">WhatsApp (login)<input type="text" name="resp_whatsapp" required></label></div>
+                    <div><label class="required">WhatsApp financeiro<input type="text" name="resp_fin_whatsapp" required placeholder="WhatsApp do responsável financeiro"></label></div>
+                    <div><label class="required">Telefone financeiro<input type="text" name="resp_fin_phone" required placeholder="Telefone do responsável financeiro"></label></div>
+                </div>
+                <div class="row-wide">
+                    <div><label class="required">Endereço completo<input type="text" name="resp_address" required></label></div>
+                </div>
+                <div class="row-wide">
+                    <div><label class="required">Senha<input type="password" name="resp_password" required></label></div>
+                    <div><label class="required">Repita a senha<input type="password" name="resp_password_confirm" required></label></div>
+                </div>
+            </div>
 
                         <div class="section" style="gap:14px;">
-                            <div class="actions">
-                                <div style="display:flex; gap:8px; align-items:center;">
-                                    <h2 style="margin:0;">Aventureiros</h2>
-                                    <span class="pill">Adicione pelo menos um</span>
-                                </div>
-                                <button type="button" id="add-child" class="btn btn-secondary">+ Aventureiro</button>
-                            </div>
-                            <div id="child-rows" class="stacked"></div>
-                        </div>
+                <div class="actions">
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <h2 style="margin:0;">Aventureiros</h2>
+                        <span class="pill">Adicione pelo menos um</span>
                     </div>
+                    <button type="button" id="add-child" class="btn btn-secondary">+ Aventureiro</button>
+                </div>
+                <div id="child-rows" class="stacked"></div>
+            </div>
+        </div>
 
                     <div class="actions" style="justify-content:flex-end; margin-top:4px;">
                         <button type="submit" class="btn btn-primary">Concluir cadastro</button>
@@ -321,25 +325,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <button type="button" class="btn btn-danger btn-sm" style="padding:8px 10px;">Remover</button>
             </div>
-            <div class="row-wide">
-                <div><label>Nome<input name="child_name" value="${childData.name||''}" required placeholder="Primeiro nome"></label></div>
-                <div><label>Sobrenome<input name="child_last" value="${childData.last||''}" placeholder="Sobrenome"></label></div>
-                <div><label>Nascimento<input type="date" name="child_birth" value="${childData.birth||''}" required></label></div>
-                <div><label>Sexo
-                    <select name="child_gender">
-                        <option value="">Selecione</option>
-                        <option ${childData.gender==='M'?'selected':''} value="M">Masculino</option>
-                        <option ${childData.gender==='F'?'selected':''} value="F">Feminino</option>
-                    </select>
-                </label></div>
-                <div><label>CPF (opcional)<input name="child_cpf" value="${childData.cpf||''}"></label></div>
-            </div>
-            <div class="row-wide">
-                <div><label>Certidão de nascimento (se CPF/RG não existir)<input name="child_birth_certificate" value="${childData.birth_cert||''}"></label></div>
-            </div>
-            <div class="row" style="gap:20px; align-items:flex-end;">
+            <div class="child-photo-area">
                 <div class="child-photo-field">
-                    <label class="child-photo-select">Selecione uma foto<input type="file" name="child_photo_${childData.idx}" accept="image/*"></label>
+                    <label class="child-photo-select">Selecione uma foto<input type="file" name="child_photo_${childData.idx}" accept="image/*" required></label>
                     <div class="child-photo-note">Você pode escolher uma imagem existente ou tirar uma nova agora.</div>
                     <div class="photo-actions">
                         <button type="button" class="btn btn-secondary btn-sm" data-file-trigger>Selecionar foto existente</button>
@@ -352,9 +340,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="row-wide">
-                <div><label>Nome completo do pai<input name="child_father_name" value="${childData.father_name||''}"></label></div>
-                <div><label>CPF do pai<input name="child_father_cpf" value="${childData.father_cpf||''}"></label></div>
-                <div><label>Telefone do pai<input name="child_father_phone" value="${childData.father_phone||''}"></label></div>
+                <div><label class="required">Nome<input name="child_name" value="${childData.name||''}" required placeholder="Primeiro nome"></label></div>
+                <div><label class="required">Sobrenome<input name="child_last" value="${childData.last||''}" required placeholder="Sobrenome"></label></div>
+                <div><label class="required">Nascimento<input type="date" name="child_birth" value="${childData.birth||''}" required></label></div>
+                <div><label class="required">Sexo
+                    <select name="child_gender" required>
+                        <option value="">Selecione</option>
+                        <option ${childData.gender==='M'?'selected':''} value="M">Masculino</option>
+                        <option ${childData.gender==='F'?'selected':''} value="F">Feminino</option>
+                    </select>
+                </label></div>
+            </div>
+            <div class="row-wide">
+                <div><label class="required">CPF ou certidão de nascimento<input name="child_birth_certificate" value="${childData.birth_cert||''}" required placeholder="CPF ou número da certidão"></label></div>
+            </div>
+            <div class="row-wide">
+                <div><label class="required">Nome completo do pai<input name="child_father_name" value="${childData.father_name||''}" data-parent-required="true" required></label></div>
+                <div><label class="required">CPF do pai<input name="child_father_cpf" value="${childData.father_cpf||''}" data-parent-required="true" required></label></div>
+                <div><label class="required">Telefone do pai<input name="child_father_phone" value="${childData.father_phone||''}" data-parent-required="true" required></label></div>
                 <div>
                     <label style="display:flex; align-items:center; gap:8px;">
                         <input type="checkbox" name="child_father_absent" value="${childData.idx}" ${childData.father_absent?'checked':''}> Pai ausente/desconhecido
@@ -362,12 +365,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="row-wide">
-                <div><label>Nome completo da mae<input name="child_mother_name" value="${childData.mother_name||''}"></label></div>
-                <div><label>CPF da mae<input name="child_mother_cpf" value="${childData.mother_cpf||''}"></label></div>
-                <div><label>Telefone da mae<input name="child_mother_phone" value="${childData.mother_phone||''}"></label></div>
+                <div><label class="required">Nome completo da mãe<input name="child_mother_name" value="${childData.mother_name||''}" data-parent-required="true" required></label></div>
+                <div><label class="required">CPF da mãe<input name="child_mother_cpf" value="${childData.mother_cpf||''}" data-parent-required="true" required></label></div>
+                <div><label class="required">Telefone da mãe<input name="child_mother_phone" value="${childData.mother_phone||''}" data-parent-required="true" required></label></div>
                 <div>
                     <label style="display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" name="child_mother_absent" value="${childData.idx}" ${childData.mother_absent?'checked':''}> Mae ausente/desconhecido
+                        <input type="checkbox" name="child_mother_absent" value="${childData.idx}" ${childData.mother_absent?'checked':''}> Mãe ausente/desconhecida
                     </label>
                 </div>
             </div>
@@ -379,15 +382,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div><label>Restrições<textarea name="child_restr" rows="3">${childData.restr||''}</textarea></label></div>
                 <div><label>Observações<textarea name="child_obs" rows="3">${childData.obs||''}</textarea></label></div>
             </div>
-            <div class="row-wide">
-                <div><label>Contato emergência<input name="child_emerg" value="${childData.emerg||''}" placeholder="Nome do contato"></label></div>
-                <div><label>Fone emergência<input name="child_emerg_phone" value="${childData.emerg_phone||''}" placeholder="WhatsApp do contato"></label></div>
-                <div><label>Plano de saúde<input name="child_plan" value="${childData.plan||''}"></label></div>
-            </div>
-            <div class="row-auth">
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_activity" value="on" required> Autoriza participação em atividades</label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_medical" value="on" required> Autoriza atendimento médico</label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_rules" value="on" required> Aceita regulamento do clube</label>
+            <div class="row">
+                <div><label class="required">Contato emergência<input name="child_emerg" value="${childData.emerg||''}" placeholder="Nome do contato" required></label></div>
+                <div><label class="required">Fone emergência<input name="child_emerg_phone" value="${childData.emerg_phone||''}" placeholder="WhatsApp do contato" required></label></div>
+                <div><label class="required">Plano de saúde<input name="child_plan" value="${childData.plan||''}" placeholder="Ex: Unimed" required></label></div>
             </div>
         `;
         let currentObjectUrl;
@@ -404,8 +402,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const toggleParentFields = (checkbox, selectors) => {
             if (!checkbox) return;
             const toggle = () => {
+                const enabled = !checkbox.checked;
                 selectors.forEach((field) => {
+                    const isParentRequired = field.dataset.parentRequired === 'true';
                     field.disabled = checkbox.checked;
+                    field.required = isParentRequired && enabled;
                 });
             };
             toggle();

@@ -50,10 +50,6 @@ def collect_children_payload(post_data, files=None):
     child_emerg = post_data.getlist('child_emerg')
     child_emerg_phone = post_data.getlist('child_emerg_phone')
     child_plan = post_data.getlist('child_plan')
-    child_auth_activity = post_data.getlist('child_auth_activity')
-    child_auth_medical = post_data.getlist('child_auth_medical')
-    child_auth_rules = post_data.getlist('child_auth_rules')
-
     if not child_names:
         errors.append('Adicione pelo menos um aventureiro.')
     for idx, name in enumerate(child_names):
@@ -71,11 +67,9 @@ def collect_children_payload(post_data, files=None):
         except ValueError:
             errors.append(f'Data inválida para {full_name or "o aventureiro"}')
             continue
-        auth_activity = str(idx) in child_auth_activity or 'on' in child_auth_activity
-        auth_medical = str(idx) in child_auth_medical or 'on' in child_auth_medical
-        auth_rules = str(idx) in child_auth_rules or 'on' in child_auth_rules
-        if not (auth_activity and auth_medical and auth_rules):
-            errors.append(f'Autorizações obrigatórias não marcadas para {full_name}.')
+        auth_activity = True
+        auth_medical = True
+        auth_rules = True
         face_file = files.get(f'child_photo_{idx}')
         payloads.append(
             {

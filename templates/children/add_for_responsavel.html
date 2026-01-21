@@ -20,7 +20,10 @@
         .row-auth { display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
         .full { grid-column:1/-1; }
         label { font-weight:700; display:block; font-size:0.95rem; margin-bottom:4px; }
+        label.required { position:relative; }
+        label.required::after { content:' *'; color:#dc2626; }
         input, select, textarea { width:100%; padding:12px; border:1px solid #cbd5e1; border-radius:0; background:#fff; font-size:1rem; box-sizing:border-box; }
+        input:disabled, textarea:disabled, select:disabled { background:#f1f5f9; color:#94a3b8; border-color:#cbd5e1; }
         textarea { resize:vertical; min-height:90px; }
         .actions { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
         .btn { border:none; border-radius:10px; padding:12px 16px; font-weight:800; cursor:pointer; transition:transform 0.1s ease, box-shadow 0.1s ease; }
@@ -105,9 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <button type="button" class="btn btn-danger btn-sm" style="padding:8px 10px;">Remover</button>
             </div>
             <div class="row-wide">
-                <div><label>Nome<input name="child_name" required placeholder="Primeiro nome"></label></div>
+                <div><label class="required">Nome<input name="child_name" required placeholder="Primeiro nome"></label></div>
                 <div><label>Sobrenome<input name="child_last" placeholder="Sobrenome"></label></div>
-                <div><label>Nascimento<input type="date" name="child_birth" required></label></div>
+                <div><label class="required">Nascimento<input type="date" name="child_birth" required></label></div>
                 <div><label>Sexo
                     <select name="child_gender">
                         <option value="">Selecione</option>
@@ -148,16 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div><label>Restrições<textarea name="child_restr" rows="3"></textarea></label></div>
                 <div><label>Observações<textarea name="child_obs" rows="3"></textarea></label></div>
             </div>
-            <div class="row-wide">
-                <div><label>Contato emergência<input name="child_emerg" placeholder="Nome do contato"></label></div>
-                <div><label>Fone emergência<input name="child_emerg_phone" placeholder="WhatsApp do contato"></label></div>
-                <div><label>Plano de saúde<input name="child_plan"></label></div>
-            </div>
-            <div class="row-auth">
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_activity" value="on" required> Autoriza participação em atividades</label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_medical" value="on" required> Autoriza atendimento médico</label>
-                <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_rules" value="on" required> Aceita regulamento</label>
-            </div>
+                <div class="row-wide">
+                    <div><label>Contato emergência<input name="child_emerg" placeholder="Nome do contato"></label></div>
+                    <div><label>Fone emergência<input name="child_emerg_phone" placeholder="WhatsApp do contato"></label></div>
+                    <div><label>Plano de saúde<input name="child_plan" placeholder="Ex: Unimed"></label></div>
+                </div>
         `;
         card.querySelector('.btn-danger').addEventListener('click', () => card.remove());
         toggleParentFields(
