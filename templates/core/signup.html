@@ -74,6 +74,7 @@
         .child-photo-field { display:grid; gap:8px; }
         .child-photo-select { display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; }
         .child-photo-select input[type="file"] { display:none; }
+        .photo-actions { display:flex; gap:10px; flex-wrap:wrap; }
         .child-photo-preview { width:120px; height:160px; border:1px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#f8fafc; position:relative; }
         .child-photo-preview span { font-size:0.8rem; color:#475569; text-align:center; padding:0 6px; }
         .child-photo-preview img { display:none; width:100%; height:100%; object-fit:cover; }
@@ -338,9 +339,12 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="row" style="gap:20px; align-items:flex-end;">
                 <div class="child-photo-field">
-                    <label class="child-photo-select">Selecionar foto<input type="file" name="child_photo_${childData.idx}" accept="image/*"></label>
-                    <div class="child-photo-note">Escolha uma imagem existente ou use a câmera.</div>
-                    <button type="button" class="btn btn-secondary btn-sm" data-camera>Usar câmera</button>
+                    <label class="child-photo-select">Selecione uma foto<input type="file" name="child_photo_${childData.idx}" accept="image/*"></label>
+                    <div class="child-photo-note">Você pode escolher uma imagem existente ou tirar uma nova agora.</div>
+                    <div class="photo-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" data-file-trigger>Selecionar foto existente</button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-camera>Capturar foto agora</button>
+                    </div>
                 </div>
                 <div class="child-photo-preview" data-preview>
                     <span>Prévia 3x4</span>
@@ -421,6 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const previewImage = previewContainer ? previewContainer.querySelector('img') : null;
         const previewPlaceholder = previewContainer ? previewContainer.querySelector('span') : null;
         const cameraButton = card.querySelector('[data-camera]');
+        const fileButton = card.querySelector('[data-file-trigger]');
         const updatePhotoPreview = () => {
             if (!photoInput || !previewImage) return;
             const file = photoInput.files && photoInput.files[0];
@@ -451,19 +456,22 @@ document.addEventListener('DOMContentLoaded', () => {
             photoInput.setAttribute('capture', 'environment');
             photoInput.click();
         };
+        const openFilePicker = () => {
+            if (!photoInput) return;
+            photoInput.removeAttribute('capture');
+            photoInput.click();
+        };
         if (photoInput) {
             photoInput.addEventListener('change', () => {
                 photoInput.removeAttribute('capture');
                 updatePhotoPreview();
             });
-            photoInput.addEventListener('click', () => {
-                if (photoInput.hasAttribute('capture')) {
-                    photoInput.removeAttribute('capture');
-                }
-            });
         }
         if (cameraButton) {
             cameraButton.addEventListener('click', openCameraCapture);
+        }
+        if (fileButton) {
+            fileButton.addEventListener('click', openFilePicker);
         }
         container.appendChild(card);
     }
