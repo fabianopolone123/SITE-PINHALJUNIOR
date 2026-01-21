@@ -71,7 +71,9 @@
         .messages { list-style:none; padding:0; margin:0 0 12px; }
         .messages li { background:#fff4e5; color:#b45309; border:1px solid #fcd34d; padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .child-card { background:#fff; border:1px solid var(--border); padding:18px; border-radius:10px; display:grid; gap:var(--gap); }
-        .child-photo-field { display:grid; gap:6px; }
+        .child-photo-field { display:grid; gap:8px; }
+        .child-photo-select { display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; }
+        .child-photo-select input[type="file"] { display:none; }
         .child-photo-preview { width:120px; height:160px; border:1px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#f8fafc; position:relative; }
         .child-photo-preview span { font-size:0.8rem; color:#475569; text-align:center; padding:0 6px; }
         .child-photo-preview img { display:none; width:100%; height:100%; object-fit:cover; }
@@ -336,8 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
             <div class="row" style="gap:20px; align-items:flex-end;">
                 <div class="child-photo-field">
-                    <label>Foto 3x4<input type="file" name="child_photo_${childData.idx}" accept="image/*" capture="environment"></label>
-                    <div class="child-photo-note">Selecione um arquivo ou use a câmera do celular/webcam.</div>
+                    <label class="child-photo-select">Selecionar foto<input type="file" name="child_photo_${childData.idx}" accept="image/*"></label>
+                    <div class="child-photo-note">Escolha uma imagem existente ou use a câmera.</div>
+                    <button type="button" class="btn btn-secondary btn-sm" data-camera>Usar câmera</button>
                 </div>
                 <div class="child-photo-preview" data-preview>
                     <span>Prévia 3x4</span>
@@ -417,6 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const previewContainer = card.querySelector('.child-photo-preview');
         const previewImage = previewContainer ? previewContainer.querySelector('img') : null;
         const previewPlaceholder = previewContainer ? previewContainer.querySelector('span') : null;
+        const cameraButton = card.querySelector('[data-camera]');
         const updatePhotoPreview = () => {
             if (!photoInput || !previewImage) return;
             const file = photoInput.files && photoInput.files[0];
@@ -442,8 +446,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         };
+        const openCameraCapture = () => {
+            if (!photoInput) return;
+            photoInput.setAttribute('capture', 'environment');
+            photoInput.click();
+        };
         if (photoInput) {
-            photoInput.addEventListener('change', updatePhotoPreview);
+            photoInput.addEventListener('change', () => {
+                photoInput.removeAttribute('capture');
+                updatePhotoPreview();
+            });
+            photoInput.addEventListener('click', () => {
+                if (photoInput.hasAttribute('capture')) {
+                    photoInput.removeAttribute('capture');
+                }
+            });
+        }
+        if (cameraButton) {
+            cameraButton.addEventListener('click', openCameraCapture);
         }
         container.appendChild(card);
     }
