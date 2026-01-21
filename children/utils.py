@@ -1,7 +1,7 @@
 import datetime
 
 from accounts.models import User
-from children.models import Child, ChildHealth, GuardianChild
+from children.models import Child, ChildFace, ChildHealth, GuardianChild
 
 
 CLASS_MAP = {
@@ -25,9 +25,10 @@ def determine_class_group(birth_date: datetime.date) -> str:
     return CLASS_MAP.get(_calculate_age(birth_date), '')
 
 
-def collect_children_payload(post_data):
+def collect_children_payload(post_data, files=None):
     errors = []
     payloads = []
+    files = files or {}
     child_names = post_data.getlist('child_name')
     child_lastnames = post_data.getlist('child_last')
     child_births = post_data.getlist('child_birth')
@@ -75,6 +76,7 @@ def collect_children_payload(post_data):
         auth_rules = str(idx) in child_auth_rules or 'on' in child_auth_rules
         if not (auth_activity and auth_medical and auth_rules):
             errors.append(f'Autorizações obrigatórias não marcadas para {full_name}.')
+        face_file = files.get(f'child_photo_{idx}')
         payloads.append(
             {
                 'name': full_name,
@@ -100,6 +102,7 @@ def collect_children_payload(post_data):
                 'auth_activity': auth_activity,
                 'auth_medical': auth_medical,
                 'auth_rules': auth_rules,
+                'face_file': face_file,
             }
         )
     return payloads, errors
@@ -141,4 +144,7 @@ def create_child_with_health(guardian_user, payload):
         auth_medical=payload['auth_medical'],
         auth_rules=payload['auth_rules'],
     )
+    face_file = payload.get('face_file')
+    if face_file:
+        ChildFace.objects.create(child=child, image=face_file)
     return child

@@ -384,7 +384,7 @@ def signup(request):
 
         # Autorizações obrigatórias
         errors = []
-        children_payload, child_errors = collect_children_payload(request.POST)
+        children_payload, child_errors = collect_children_payload(request.POST, request.FILES)
         errors.extend(child_errors)
 
         if not (resp_name and resp_whatsapp and resp_password and resp_cpf):

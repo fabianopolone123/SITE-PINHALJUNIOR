@@ -71,6 +71,11 @@
         .messages { list-style:none; padding:0; margin:0 0 12px; }
         .messages li { background:#fff4e5; color:#b45309; border:1px solid #fcd34d; padding:10px 12px; border-radius:10px; margin-bottom:8px; }
         .child-card { background:#fff; border:1px solid var(--border); padding:18px; border-radius:10px; display:grid; gap:var(--gap); }
+        .child-photo-field { display:grid; gap:6px; }
+        .child-photo-preview { width:120px; height:160px; border:1px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#f8fafc; position:relative; }
+        .child-photo-preview span { font-size:0.8rem; color:#475569; text-align:center; padding:0 6px; }
+        .child-photo-preview img { display:none; width:100%; height:100%; object-fit:cover; }
+        .child-photo-note { font-size:0.85rem; color:#475569; }
         .stacked { display:grid; gap:14px; }
         .field-error {
             border-color: #ef4444;
@@ -110,7 +115,7 @@
                     </ul>
                 {% endif %}
                 <div id="client-validation" class="client-error">Preencha os campos destacados antes de enviar.</div>
-                <form method="post" class="stacked">
+                <form method="post" class="stacked" enctype="multipart/form-data">
                     {% csrf_token %}
                     <input type="hidden" name="signup_type" id="signup-type" value="responsavel">
                     <div class="section">
@@ -329,6 +334,16 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="row-wide">
                 <div><label>Certidão de nascimento (se CPF/RG não existir)<input name="child_birth_certificate" value="${childData.birth_cert||''}"></label></div>
             </div>
+            <div class="row" style="gap:20px; align-items:flex-end;">
+                <div class="child-photo-field">
+                    <label>Foto 3x4<input type="file" name="child_photo_${childData.idx}" accept="image/*" capture="environment"></label>
+                    <div class="child-photo-note">Selecione um arquivo ou use a câmera do celular/webcam.</div>
+                </div>
+                <div class="child-photo-preview" data-preview>
+                    <span>Prévia 3x4</span>
+                    <img alt="Prévia da foto do aventureiro">
+                </div>
+            </div>
             <div class="row-wide">
                 <div><label>Nome completo do pai<input name="child_father_name" value="${childData.father_name||''}"></label></div>
                 <div><label>CPF do pai<input name="child_father_cpf" value="${childData.father_cpf||''}"></label></div>
@@ -368,7 +383,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" name="child_auth_rules" value="on" required> Aceita regulamento do clube</label>
             </div>
         `;
-        card.querySelector('.btn-danger').addEventListener('click', () => card.remove());
+        let currentObjectUrl;
+        const cleanupPreview = () => {
+            if (currentObjectUrl) {
+                URL.revokeObjectURL(currentObjectUrl);
+                currentObjectUrl = null;
+            }
+        };
+        card.querySelector('.btn-danger').addEventListener('click', () => {
+            cleanupPreview();
+            card.remove();
+        });
         const toggleParentFields = (checkbox, selectors) => {
             if (!checkbox) return;
             const toggle = () => {
@@ -388,6 +413,38 @@ document.addEventListener('DOMContentLoaded', () => {
             card.querySelector('[name="child_mother_absent"]'),
             Array.from(card.querySelectorAll('[name="child_mother_name"], [name="child_mother_cpf"], [name="child_mother_phone"]')),
         );
+        const photoInput = card.querySelector('input[type="file"][name^="child_photo_"]');
+        const previewContainer = card.querySelector('.child-photo-preview');
+        const previewImage = previewContainer ? previewContainer.querySelector('img') : null;
+        const previewPlaceholder = previewContainer ? previewContainer.querySelector('span') : null;
+        const updatePhotoPreview = () => {
+            if (!photoInput || !previewImage) return;
+            const file = photoInput.files && photoInput.files[0];
+            if (file) {
+                if (currentObjectUrl) {
+                    URL.revokeObjectURL(currentObjectUrl);
+                }
+                currentObjectUrl = URL.createObjectURL(file);
+                previewImage.src = currentObjectUrl;
+                previewImage.style.display = 'block';
+                if (previewPlaceholder) {
+                    previewPlaceholder.style.display = 'none';
+                }
+            } else {
+                if (currentObjectUrl) {
+                    URL.revokeObjectURL(currentObjectUrl);
+                    currentObjectUrl = null;
+                }
+                previewImage.src = '';
+                previewImage.style.display = 'none';
+                if (previewPlaceholder) {
+                    previewPlaceholder.style.display = 'block';
+                }
+            }
+        };
+        if (photoInput) {
+            photoInput.addEventListener('change', updatePhotoPreview);
+        }
         container.appendChild(card);
     }
 

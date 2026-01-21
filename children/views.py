@@ -107,7 +107,7 @@ def meus_aventureiros(request):
 @role_required([User.Role.RESPONSAVEL])
 def add_aventureiro(request):
     if request.method == 'POST':
-        children_payload, errors = collect_children_payload(request.POST)
+        children_payload, errors = collect_children_payload(request.POST, request.FILES)
         if errors:
             for err in errors:
                 messages.error(request, err)
