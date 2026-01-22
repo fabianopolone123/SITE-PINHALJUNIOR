@@ -191,7 +191,7 @@
                             </div>
                         </div>
                         <div class="row-wide">
-                            <div><label class="required">Nome<input type="text" id="dir-name" name="dir_name" list="directoria-names" value="{{ directoria_values.dir_name }}" required></label></div>
+                            <div><label class="required">Primeiro nome<input type="text" id="dir-name" name="dir_name" list="directoria-names" value="{{ directoria_values.dir_name }}" required></label></div>
                             <div><label class="required">Sobrenome<input type="text" name="dir_last" value="{{ directoria_values.dir_last }}" required></label></div>
                             <div><label class="required">WhatsApp<input type="text" id="dir-whatsapp" name="dir_whatsapp" value="{{ directoria_values.dir_whatsapp }}" required></label></div>
                             <div><label class="required">Endereço completo<input type="text" id="dir-address" name="dir_address" value="{{ directoria_values.dir_address }}" required></label></div>
@@ -226,7 +226,7 @@
                                 <span class="pill">Login</span>
                             </div>
                             <div class="row-wide">
-                                <div><label class="required">Nome completo<input type="text" name="resp_name" value="{{ responsavel_values.resp_name }}" required></label></div>
+                                <div><label class="required">Primeiro nome<input type="text" name="resp_name" value="{{ responsavel_values.resp_name }}" required></label></div>
                                 <div><label class="required">Sobrenome<input type="text" name="resp_last" value="{{ responsavel_values.resp_last }}" required></label></div>
                                 <div><label class="required">CPF (obrigatorio)<input type="text" name="resp_cpf" value="{{ responsavel_values.resp_cpf }}" required></label></div>
                             </div>
@@ -525,8 +525,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <img alt="Prévia da foto do aventureiro">
                 </div>
             </div>
-            <div class="row-wide">
-                <div><label class="required">Nome<input name="child_name" value="${childData.name || ''}" required placeholder="Primeiro nome"></label></div>
+                <div class="row-wide">
+                    <div><label class="required">Primeiro nome<input name="child_name" value="${childData.name || ''}" required placeholder="Primeiro nome"></label></div>
                 <div><label class="required">Sobrenome<input name="child_last" value="${childData.last || ''}" required placeholder="Sobrenome"></label></div>
                 <div><label class="required">Nascimento<input type="date" name="child_birth" value="${childData.birth || ''}" required></label></div>
                 <div><label class="required">Sexo
