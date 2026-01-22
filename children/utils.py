@@ -1,6 +1,6 @@
 import datetime
+import re
 
-from accounts.models import User
 from children.models import Child, ChildFace, ChildHealth, GuardianChild
 
 
@@ -10,6 +10,13 @@ CLASS_MAP = {
     8: 'Edificadores',
     9: 'Mãos Ajudadoras',
 }
+
+
+def _split_identity_document(value: str) -> tuple[str, str]:
+    raw = (value or '').strip()
+    digits = re.sub(r'\D', '', raw)
+    cpf_value = digits if len(digits) == 11 else ''
+    return cpf_value, raw
 
 
 def _calculate_age(birth_date: datetime.date) -> int:
@@ -33,8 +40,7 @@ def collect_children_payload(post_data, files=None):
     child_lastnames = post_data.getlist('child_last')
     child_births = post_data.getlist('child_birth')
     child_genders = post_data.getlist('child_gender')
-    child_cpfs = post_data.getlist('child_cpf')
-    child_birth_certs = post_data.getlist('child_birth_certificate')
+    child_identity = post_data.getlist('child_identity')
     child_father_names = post_data.getlist('child_father_name')
     child_father_cpfs = post_data.getlist('child_father_cpf')
     child_father_phones = post_data.getlist('child_father_phone')
@@ -58,10 +64,14 @@ def collect_children_payload(post_data, files=None):
         full_name = f'{first} {last}'.strip()
         birth_raw = (child_births[idx] or '') if idx < len(child_births) else ''
         gender = (child_genders[idx] or '').strip()
-        cpf_child = (child_cpfs[idx] or '').strip() if idx < len(child_cpfs) else ''
+        identity_raw = (child_identity[idx] or '').strip() if idx < len(child_identity) else ''
         if not first or not birth_raw:
             errors.append('Cada aventureiro precisa de nome e data de nascimento.')
             continue
+        if not gender:
+            errors.append(f'Informe o sexo de {full_name or "o aventureiro"}.')
+        if not identity_raw:
+            errors.append(f'Informe CPF ou certidão para {full_name or "o aventureiro"}.')
         try:
             birth_date = datetime.date.fromisoformat(birth_raw)
         except ValueError:
@@ -71,13 +81,25 @@ def collect_children_payload(post_data, files=None):
         auth_medical = True
         auth_rules = True
         face_file = files.get(f'child_photo_{idx}')
+        if not face_file:
+            errors.append(f'Envie uma foto 3x4 de {full_name or "o aventureiro"}.')
+        plan_value = (child_plan[idx] or '') if idx < len(child_plan) else ''
+        if not plan_value:
+            errors.append(f'Informe o plano de saúde de {full_name or "o aventureiro"}.')
+        emerg_value = (child_emerg[idx] or '') if idx < len(child_emerg) else ''
+        emerg_phone_value = (child_emerg_phone[idx] or '') if idx < len(child_emerg_phone) else ''
+        if not emerg_value:
+            errors.append(f'Informe um contato de emergência para {full_name or "o aventureiro"}.')
+        if not emerg_phone_value:
+            errors.append(f'Informe um telefone de emergência para {full_name or "o aventureiro"}.')
         payloads.append(
             {
                 'name': full_name,
                 'birth_date': birth_date,
                 'gender': gender,
-                'cpf': cpf_child,
-                'birth_certificate': (child_birth_certs[idx] or '') if idx < len(child_birth_certs) else '',
+                'cpf': '',
+                'birth_certificate': '',
+                'identity_document': identity_raw,
                 'father_name': (child_father_names[idx] or '') if idx < len(child_father_names) else '',
                 'father_cpf': (child_father_cpfs[idx] or '') if idx < len(child_father_cpfs) else '',
                 'father_phone': (child_father_phones[idx] or '') if idx < len(child_father_phones) else '',
@@ -90,9 +112,9 @@ def collect_children_payload(post_data, files=None):
                 'meds': (child_meds[idx] or '') if idx < len(child_meds) else '',
                 'restr': (child_restr[idx] or '') if idx < len(child_restr) else '',
                 'obs': (child_obs[idx] or '') if idx < len(child_obs) else '',
-                'emerg': (child_emerg[idx] or '') if idx < len(child_emerg) else '',
-                'emerg_phone': (child_emerg_phone[idx] or '') if idx < len(child_emerg_phone) else '',
-                'plan': (child_plan[idx] or '') if idx < len(child_plan) else '',
+                'emerg': emerg_value,
+                'emerg_phone': emerg_phone_value,
+                'plan': plan_value,
                 'auth_activity': auth_activity,
                 'auth_medical': auth_medical,
                 'auth_rules': auth_rules,
@@ -103,14 +125,15 @@ def collect_children_payload(post_data, files=None):
 
 
 def create_child_with_health(guardian_user, payload):
+    cpf_value, birth_cert_value = _split_identity_document(payload.get('identity_document', ''))
     child = Child.objects.create(
         name=payload['name'],
         birth_date=payload['birth_date'],
         gender=payload['gender'],
-        cpf=payload['cpf'],
+        cpf=cpf_value,
         active=True,
         class_group=determine_class_group(payload['birth_date']),
-        birth_certificate_number=payload.get('birth_certificate', ''),
+        birth_certificate_number=birth_cert_value,
         father_name=payload.get('father_name', '') if not payload.get('father_absent') else '',
         father_cpf=payload.get('father_cpf', '') if not payload.get('father_absent') else '',
         father_phone=payload.get('father_phone', '') if not payload.get('father_absent') else '',

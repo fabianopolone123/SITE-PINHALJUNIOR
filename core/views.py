@@ -6,6 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.db import models
+import json
+
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -35,6 +37,77 @@ def assign_user_groups(user, roles):
     names = {ROLE_GROUP_MAP.get(role) for role in roles if ROLE_GROUP_MAP.get(role)}
     groups = [Group.objects.get_or_create(name=name)[0] for name in names]
     user.groups.set(groups)
+
+
+def _build_child_draft(post_data):
+    child_names = post_data.getlist('child_name')
+    child_lastnames = post_data.getlist('child_last')
+    child_births = post_data.getlist('child_birth')
+    child_genders = post_data.getlist('child_gender')
+    child_identity = post_data.getlist('child_identity')
+    child_father_names = post_data.getlist('child_father_name')
+    child_father_cpfs = post_data.getlist('child_father_cpf')
+    child_father_phones = post_data.getlist('child_father_phone')
+    child_father_absent = post_data.getlist('child_father_absent')
+    child_mother_names = post_data.getlist('child_mother_name')
+    child_mother_cpfs = post_data.getlist('child_mother_cpf')
+    child_mother_phones = post_data.getlist('child_mother_phone')
+    child_mother_absent = post_data.getlist('child_mother_absent')
+    child_allergies = post_data.getlist('child_allergies')
+    child_meds = post_data.getlist('child_meds')
+    child_restr = post_data.getlist('child_restr')
+    child_obs = post_data.getlist('child_obs')
+    child_emerg = post_data.getlist('child_emerg')
+    child_emerg_phone = post_data.getlist('child_emerg_phone')
+    child_plan = post_data.getlist('child_plan')
+    max_len = max(
+        len(child_names),
+        len(child_lastnames),
+        len(child_births),
+        len(child_genders),
+        len(child_identity),
+        len(child_father_names),
+        len(child_father_cpfs),
+        len(child_father_phones),
+        len(child_mother_names),
+        len(child_mother_cpfs),
+        len(child_mother_phones),
+        len(child_allergies),
+        len(child_meds),
+        len(child_restr),
+        len(child_obs),
+        len(child_emerg),
+        len(child_emerg_phone),
+        len(child_plan),
+    )
+    draft = []
+    for idx in range(max_len):
+        draft.append(
+            {
+                'idx': idx,
+                'name': (child_names[idx] if idx < len(child_names) else '').strip(),
+                'last': (child_lastnames[idx] if idx < len(child_lastnames) else '').strip(),
+                'birth': child_births[idx] if idx < len(child_births) else '',
+                'gender': child_genders[idx] if idx < len(child_genders) else '',
+                'birth_cert': child_identity[idx] if idx < len(child_identity) else '',
+                'father_name': child_father_names[idx] if idx < len(child_father_names) else '',
+                'father_cpf': child_father_cpfs[idx] if idx < len(child_father_cpfs) else '',
+                'father_phone': child_father_phones[idx] if idx < len(child_father_phones) else '',
+                'father_absent': str(idx) in child_father_absent,
+                'mother_name': child_mother_names[idx] if idx < len(child_mother_names) else '',
+                'mother_cpf': child_mother_cpfs[idx] if idx < len(child_mother_cpfs) else '',
+                'mother_phone': child_mother_phones[idx] if idx < len(child_mother_phones) else '',
+                'mother_absent': str(idx) in child_mother_absent,
+                'allergies': child_allergies[idx] if idx < len(child_allergies) else '',
+                'meds': child_meds[idx] if idx < len(child_meds) else '',
+                'restr': child_restr[idx] if idx < len(child_restr) else '',
+                'obs': child_obs[idx] if idx < len(child_obs) else '',
+                'emerg': child_emerg[idx] if idx < len(child_emerg) else '',
+                'emerg_phone': child_emerg_phone[idx] if idx < len(child_emerg_phone) else '',
+                'plan': child_plan[idx] if idx < len(child_plan) else '',
+            }
+        )
+    return draft
 
 
 @never_cache
@@ -301,17 +374,32 @@ def signup(request):
     UserModel = get_user_model()
     directoria_candidates = UserModel.objects.filter(role__in=[User.Role.ADM, User.Role.DIRETORIA]).order_by('first_name')
     role_choices = User.Role.choices
+    signup_type = 'responsavel'
+    dir_prefill = {}
+    resp_prefill = {}
+    selected_dir_roles = []
+    child_draft = []
+    if request.method == 'POST':
+        child_draft = _build_child_draft(request.POST)
+    child_draft_json = json.dumps(child_draft)
     if request.method == 'POST':
         signup_type = request.POST.get('signup_type', 'responsavel')
         if signup_type == 'directoria':
             dir_name = request.POST.get('dir_name', '').strip()
             dir_last = request.POST.get('dir_last', '').strip()
             dir_whatsapp = request.POST.get('dir_whatsapp', '').strip()
-            dir_email = request.POST.get('dir_email', '').strip()
             dir_address = request.POST.get('dir_address', '').strip()
             dir_password = request.POST.get('dir_password', '').strip()
             dir_password_confirm = request.POST.get('dir_password_confirm', '').strip()
             dir_roles = request.POST.getlist('dir_roles')
+            dir_photo = request.FILES.get('dir_photo')
+            dir_prefill = {
+                'dir_name': dir_name,
+                'dir_last': dir_last,
+                'dir_whatsapp': dir_whatsapp,
+                'dir_address': dir_address,
+            }
+            selected_dir_roles = dir_roles
 
             errors = []
             if not (dir_name and dir_whatsapp and dir_password and dir_password_confirm):
@@ -320,6 +408,8 @@ def signup(request):
                 errors.append('As senhas informadas para a diretoria não conferem.')
             if not dir_roles:
                 errors.append('Selecione pelo menos um perfil.')
+            if not dir_photo:
+                errors.append('Envie uma foto 3x4 do membro da diretoria.')
 
             dir_whatsapp_norm = normalize_whatsapp_number(dir_whatsapp)
             if not dir_whatsapp_norm:
@@ -335,6 +425,11 @@ def signup(request):
                         'title': 'Cadastre-se',
                         'directoria_candidates': directoria_candidates,
                         'role_choices': role_choices,
+                        'active_signup_type': signup_type,
+                        'directoria_values': dir_prefill,
+                        'selected_dir_roles': selected_dir_roles,
+                        'responsavel_values': resp_prefill,
+                        'children_draft': child_draft_json,
                     },
                 )
 
@@ -347,7 +442,6 @@ def signup(request):
                     'financial_whatsapp': dir_whatsapp_norm,
                     'financial_phone': '',
                     'address': dir_address,
-                    'email': dir_email,
                     'is_staff': True,
                 },
             )
@@ -355,10 +449,10 @@ def signup(request):
             user.last_name = dir_last
             user.financial_whatsapp = dir_whatsapp_norm
             user.financial_phone = ''
-            user.email = dir_email
             user.role = dir_roles[0]
             user.is_staff = True
             user.is_superuser = User.Role.ADM in dir_roles
+            user.photo = dir_photo
             if created:
                 user.is_active = False
             user.set_password(dir_password)
@@ -377,10 +471,17 @@ def signup(request):
         resp_fin_phone = request.POST.get('resp_fin_phone', '').strip()
         resp_cpf = request.POST.get('resp_cpf', '').strip()
         resp_address = request.POST.get('resp_address', '').strip()
-        resp_email = request.POST.get('resp_email', '').strip()
         resp_password = request.POST.get('resp_password', '').strip()
         resp_password_confirm = request.POST.get('resp_password_confirm', '').strip()
-        resp_password_confirm = request.POST.get('resp_password_confirm', '').strip()
+        resp_prefill = {
+            'resp_name': resp_name,
+            'resp_last': resp_last,
+            'resp_whatsapp': resp_whatsapp,
+            'resp_fin_whatsapp': resp_fin_whatsapp,
+            'resp_fin_phone': resp_fin_phone,
+            'resp_cpf': resp_cpf,
+            'resp_address': resp_address,
+        }
 
         # Autorizações obrigatórias
         errors = []
@@ -400,7 +501,20 @@ def signup(request):
         if errors:
             for e in errors:
                 messages.error(request, e)
-            return render(request, 'core/signup.html')
+            return render(
+                request,
+                'core/signup.html',
+                    {
+                        'title': 'Cadastre-se',
+                        'directoria_candidates': directoria_candidates,
+                        'role_choices': role_choices,
+                        'active_signup_type': signup_type,
+                        'directoria_values': dir_prefill,
+                        'selected_dir_roles': selected_dir_roles,
+                        'responsavel_values': resp_prefill,
+                        'children_draft': child_draft_json,
+                    },
+                )
 
         # cria usuário
         user, created = UserModel.objects.get_or_create(
@@ -412,7 +526,6 @@ def signup(request):
                 'financial_whatsapp': resp_fin_whatsapp_norm or resp_whatsapp_norm,
                 'financial_phone': resp_fin_phone,
                 'address': resp_address,
-                'email': resp_email,
             },
         )
         user.first_name = resp_name
@@ -420,7 +533,6 @@ def signup(request):
         user.financial_whatsapp = resp_fin_whatsapp_norm or resp_whatsapp_norm
         user.financial_phone = resp_fin_phone
         user.address = resp_address
-        user.email = resp_email
         user.role = User.Role.RESPONSAVEL
         user.set_password(resp_password)
         user.save()
@@ -439,5 +551,10 @@ def signup(request):
             'title': 'Cadastre-se',
             'directoria_candidates': directoria_candidates,
             'role_choices': role_choices,
+            'active_signup_type': signup_type,
+            'directoria_values': dir_prefill,
+            'selected_dir_roles': selected_dir_roles,
+            'responsavel_values': resp_prefill,
+            'children_draft': child_draft_json,
         },
     )

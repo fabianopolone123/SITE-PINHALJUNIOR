@@ -74,17 +74,38 @@
         label.required { position:relative; font-weight:700; }
         label.required::after { content:' *'; color:#dc2626; }
         input:disabled, textarea:disabled, select:disabled { background:#f1f5f9; color:#94a3b8; border-color:#cbd5e1; }
-        .child-photo-field { display:grid; gap:8px; }
+        .child-photo-field, .dir-photo-field { display:grid; gap:8px; }
         .child-photo-select { display:inline-flex; align-items:center; gap:6px; cursor:pointer; font-weight:700; }
         .child-photo-select input[type="file"] { display:none; }
-        .photo-actions { display:flex; gap:10px; flex-wrap:wrap; }
-        .child-photo-preview { width:120px; height:160px; border:1px dashed var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:#f8fafc; position:relative; }
-        .child-photo-preview span { font-size:0.8rem; color:#475569; text-align:center; padding:0 6px; }
-        .child-photo-preview img { display:none; width:100%; height:100%; object-fit:cover; }
-        .child-photo-note { font-size:0.85rem; color:#475569; }
-        .child-photo-area { display:flex; align-items:center; gap:20px; }
-        .child-photo-area .child-photo-preview { width:150px; height:210px; }
-        .child-photo-area .child-photo-field { flex:1; }
+        .photo-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+        .child-photo-preview, .dir-photo-preview {
+            width:170px;
+            height:226px;
+            border:1px dashed var(--border);
+            border-radius:14px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            overflow:hidden;
+            background:#f8fafc;
+            position:relative;
+        }
+        .child-photo-preview span, .dir-photo-preview span { font-size:0.85rem; color:#475569; text-align:center; padding:0 6px; }
+        .child-photo-preview img, .dir-photo-preview img { display:none; width:100%; height:100%; object-fit:cover; border-radius:14px; }
+        .child-photo-note, .dir-photo-note { font-size:0.85rem; color:#475569; }
+        .child-photo-area, .dir-photo-area {
+            display:flex;
+            align-items:flex-start;
+            justify-content:center;
+            gap:24px;
+            flex-wrap:wrap;
+            border:1px solid rgba(148,163,184,0.6);
+            border-radius:14px;
+            padding:18px;
+            background:#f8fafc;
+        }
+        .child-photo-area .child-photo-field,
+        .dir-photo-area .dir-photo-field { flex:1; min-width:220px; }
         .stacked { display:grid; gap:14px; }
         .field-error {
             border-color: #ef4444;
@@ -105,8 +126,9 @@
             .section, .child-card { padding:12px; }
             .actions { flex-direction:column; align-items:flex-start; }
             .btn { width:100%; text-align:center; }
-            .child-photo-area { flex-direction:column; align-items:flex-start; }
-            .child-photo-area .child-photo-preview { width:100%; max-width:220px; height:auto; min-height:180px; }
+            .child-photo-area, .dir-photo-area { flex-direction:column; align-items:flex-start; }
+            .child-photo-area .child-photo-preview,
+            .dir-photo-area .dir-photo-preview { width:100%; max-width:220px; height:auto; min-height:180px; }
         }
     </style>
 </head>
@@ -117,7 +139,7 @@
                 <div class="badge">Cadastre-se</div>
                 <div style="font-weight:700;">Responsavel + Aventureiros</div>
             </div>
-            <div class="panel-body">
+                <div class="panel-body">
                 {% if messages %}
                     <ul class="messages">
                         {% for message in messages %}
@@ -128,7 +150,7 @@
                 <div id="client-validation" class="client-error">Preencha os campos destacados antes de enviar.</div>
                 <form method="post" class="stacked" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <input type="hidden" name="signup_type" id="signup-type" value="responsavel">
+                    <input type="hidden" name="signup_type" id="signup-type" value="{{ active_signup_type }}">
                     <div class="section">
                         <div class="actions" style="gap:12px; align-items:center;">
                             <h2>Tipo de cadastro</h2>
@@ -153,81 +175,85 @@
                             <h2 style="margin:0;">Diretoria / Administrativo</h2>
                             <span class="pill">Cadastro rápido</span>
                         </div>
-                        <div class="row-wide">
-                        <div>
-                            <label class="required">Nome<input type="text" id="dir-name" name="dir_name" list="directoria-names" required></label>
-                        </div>
-                        <div>
-                            <label>Sobrenome<input type="text" name="dir_last"></label>
-                        </div>
-                            <datalist id="directoria-names">
-                                {% for candidate in directoria_candidates %}
-                                    <option value="{{ candidate.first_name }} {{ candidate.last_name }}" data-whatsapp="{{ candidate.whatsapp_number }}" data-email="{{ candidate.email }}"></option>
-                                {% endfor %}
-                            </datalist>
-                        <div>
-                            <label class="required">WhatsApp<input type="text" id="dir-whatsapp" name="dir_whatsapp" required></label>
-                        </div>
-                        <div>
-                            <label>Endereço completo<input type="text" id="dir-address" name="dir_address"></label>
-                        </div>
+                        <div class="dir-photo-area">
+                            <div class="dir-photo-field">
+                                <div style="font-weight:700;">Foto 3x4</div>
+                                <label class="child-photo-select">Escolher arquivo<input id="dir-photo-input" type="file" name="dir_photo" accept="image/*" required></label>
+                                <div class="dir-photo-note">Envie ou capture uma foto 3x4 nítida.</div>
+                                <div class="photo-actions">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-dir-file>Selecionar foto existente</button>
+                                    <button type="button" class="btn btn-secondary btn-sm" data-dir-camera>Tirar foto agora</button>
+                                </div>
+                            </div>
+                            <div class="dir-photo-preview" id="dir-photo-preview">
+                                <span>Prévia 3x4</span>
+                                <img alt="Prévia da foto da diretoria">
+                            </div>
                         </div>
                         <div class="row-wide">
-                            <div>
-                                <label class="required">Senha<input type="password" name="dir_password" required></label>
-                            </div>
-                            <div>
-                                <label class="required">Confirme a senha<input type="password" name="dir_password_confirm" required></label>
-                            </div>
+                            <div><label class="required">Nome<input type="text" id="dir-name" name="dir_name" list="directoria-names" value="{{ directoria_values.dir_name }}" required></label></div>
+                            <div><label class="required">Sobrenome<input type="text" name="dir_last" value="{{ directoria_values.dir_last }}" required></label></div>
+                            <div><label class="required">WhatsApp<input type="text" id="dir-whatsapp" name="dir_whatsapp" value="{{ directoria_values.dir_whatsapp }}" required></label></div>
+                            <div><label class="required">Endereço completo<input type="text" id="dir-address" name="dir_address" value="{{ directoria_values.dir_address }}" required></label></div>
+                        </div>
+                        <datalist id="directoria-names">
+                            {% for candidate in directoria_candidates %}
+                                <option value="{{ candidate.first_name }} {{ candidate.last_name }}" data-whatsapp="{{ candidate.whatsapp_number }}"></option>
+                            {% endfor %}
+                        </datalist>
+                        <div class="row-wide">
+                            <div><label class="required">Senha<input type="password" name="dir_password" required></label></div>
+                            <div><label class="required">Confirme a senha<input type="password" name="dir_password_confirm" required></label></div>
                         </div>
                         <div>
                             <div style="font-weight:700; margin-bottom:6px;">Perfis</div>
+                            {% with selected_dir_roles as sel_roles %}
                             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:10px;">
                                 {% for code,label in role_choices %}
                                     <label style="display:flex; align-items:center; gap:6px;">
-                                        <input type="checkbox" name="dir_roles" value="{{ code }}"> {{ label }}
+                                        <input type="checkbox" name="dir_roles" value="{{ code }}" {% if code in sel_roles %}checked{% endif %}> {{ label }}
                                     </label>
                                 {% endfor %}
                             </div>
+                            {% endwith %}
                         </div>
                     </div>
 
                     <div id="responsavel-section">
-            <div class="section">
-                <div class="actions" style="gap:6px;">
-                    <h2>Responsavel</h2>
-                    <span class="pill">Login</span>
-                </div>
-                <div class="row-wide">
-                    <div><label class="required">Nome completo<input type="text" name="resp_name" required></label></div>
-                    <div><label class="required">Sobrenome<input type="text" name="resp_last" required></label></div>
-                    <div><label class="required">CPF (obrigatorio)<input type="text" name="resp_cpf" required></label></div>
-                </div>
-                <div class="row-wide">
-                    <div><label class="required">WhatsApp (login)<input type="text" name="resp_whatsapp" required></label></div>
-                    <div><label class="required">WhatsApp financeiro<input type="text" name="resp_fin_whatsapp" required placeholder="WhatsApp do responsável financeiro"></label></div>
-                    <div><label class="required">Telefone financeiro<input type="text" name="resp_fin_phone" required placeholder="Telefone do responsável financeiro"></label></div>
-                </div>
-                <div class="row-wide">
-                    <div><label class="required">Endereço completo<input type="text" name="resp_address" required></label></div>
-                </div>
-                <div class="row-wide">
-                    <div><label class="required">Senha<input type="password" name="resp_password" required></label></div>
-                    <div><label class="required">Repita a senha<input type="password" name="resp_password_confirm" required></label></div>
-                </div>
-            </div>
-
+                        <div class="section">
+                            <div class="actions" style="gap:6px;">
+                                <h2>Responsável</h2>
+                                <span class="pill">Login</span>
+                            </div>
+                            <div class="row-wide">
+                                <div><label class="required">Nome completo<input type="text" name="resp_name" value="{{ responsavel_values.resp_name }}" required></label></div>
+                                <div><label class="required">Sobrenome<input type="text" name="resp_last" value="{{ responsavel_values.resp_last }}" required></label></div>
+                                <div><label class="required">CPF (obrigatorio)<input type="text" name="resp_cpf" value="{{ responsavel_values.resp_cpf }}" required></label></div>
+                            </div>
+                            <div class="row-wide">
+                                <div><label class="required">WhatsApp (login)<input type="text" name="resp_whatsapp" value="{{ responsavel_values.resp_whatsapp }}" required></label></div>
+                                <div><label class="required">WhatsApp financeiro<input type="text" name="resp_fin_whatsapp" value="{{ responsavel_values.resp_fin_whatsapp }}" required placeholder="WhatsApp do responsável financeiro"></label></div>
+                                <div><label class="required">Telefone financeiro<input type="text" name="resp_fin_phone" value="{{ responsavel_values.resp_fin_phone }}" required placeholder="Telefone do responsável financeiro"></label></div>
+                            </div>
+                            <div class="row-wide">
+                                <div><label class="required">Endereço completo<input type="text" name="resp_address" value="{{ responsavel_values.resp_address }}" required></label></div>
+                            </div>
+                            <div class="row-wide">
+                                <div><label class="required">Senha<input type="password" name="resp_password" required></label></div>
+                                <div><label class="required">Repita a senha<input type="password" name="resp_password_confirm" required></label></div>
+                            </div>
+                        </div>
                         <div class="section" style="gap:14px;">
-                <div class="actions">
-                    <div style="display:flex; gap:8px; align-items:center;">
-                        <h2 style="margin:0;">Aventureiros</h2>
-                        <span class="pill">Adicione pelo menos um</span>
+                            <div class="actions">
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <h2 style="margin:0;">Aventureiros</h2>
+                                    <span class="pill">Adicione pelo menos um</span>
+                                </div>
+                                <button type="button" id="add-child" class="btn btn-secondary">+ Aventureiro</button>
+                            </div>
+                            <div id="child-rows" class="stacked"></div>
+                        </div>
                     </div>
-                    <button type="button" id="add-child" class="btn btn-secondary">+ Aventureiro</button>
-                </div>
-                <div id="child-rows" class="stacked"></div>
-            </div>
-        </div>
 
                     <div class="actions" style="justify-content:flex-end; margin-top:4px;">
                         <button type="submit" class="btn btn-primary">Concluir cadastro</button>
@@ -236,6 +262,9 @@
             </div>
         </div>
     </div>
+    <script>
+        window.SERVER_CHILD_DRAFT = {{ children_draft|default:"[]"|safe }};
+    </script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('child-rows');
@@ -246,7 +275,105 @@ document.addEventListener('DOMContentLoaded', () => {
     const cards = document.querySelectorAll('[data-target]');
     const dirName = document.getElementById('dir-name');
     const dirWhatsapp = document.getElementById('dir-whatsapp');
-    const dirEmail = document.getElementById('dir-email');
+    const serverChildDraft = window.SERVER_CHILD_DRAFT || [];
+    const FORM_DRAFT_KEY = 'signupDraft';
+
+    const childFieldMap = {
+        child_name: 'name',
+        child_last: 'last',
+        child_birth: 'birth',
+        child_gender: 'gender',
+        child_identity: 'birth_cert',
+        child_father_name: 'father_name',
+        child_father_cpf: 'father_cpf',
+        child_father_phone: 'father_phone',
+        child_father_absent: 'father_absent',
+        child_mother_name: 'mother_name',
+        child_mother_cpf: 'mother_cpf',
+        child_mother_phone: 'mother_phone',
+        child_mother_absent: 'mother_absent',
+        child_allergies: 'allergies',
+        child_meds: 'meds',
+        child_restr: 'restr',
+        child_obs: 'obs',
+        child_emerg: 'emerg',
+        child_emerg_phone: 'emerg_phone',
+        child_plan: 'plan',
+    };
+
+    const gatherFields = (names) => {
+        const values = {};
+        names.forEach((name) => {
+            const field = document.querySelector(`[name="${name}"]`);
+            if (field) {
+                values[name] = field.value;
+            }
+        });
+        return values;
+    };
+
+    const collectChildrenDraft = () =>
+        Array.from(container.querySelectorAll('.child-card')).map((card) => {
+            const data = {};
+            card.querySelectorAll('input, select, textarea').forEach((field) => {
+                const mapKey = childFieldMap[field.name];
+                if (!mapKey) return;
+                if (field.type === 'checkbox') {
+                    data[mapKey] = field.checked;
+                } else {
+                    data[mapKey] = field.value;
+                }
+            });
+            return data;
+        });
+
+    function storeFormDraft() {
+        if (!window.sessionStorage) {
+            return;
+        }
+        const draft = {
+            signupType: signupTypeField?.value || 'responsavel',
+            responsavel: gatherFields(['resp_name', 'resp_last', 'resp_cpf', 'resp_whatsapp', 'resp_fin_whatsapp', 'resp_fin_phone', 'resp_address']),
+            directoria: gatherFields(['dir_name', 'dir_last', 'dir_whatsapp', 'dir_address']),
+            children: collectChildrenDraft(),
+        };
+        sessionStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+    }
+
+    const clearFormDraft = () => {
+        if (window.sessionStorage) {
+            sessionStorage.removeItem(FORM_DRAFT_KEY);
+        }
+    };
+
+    const applyFieldValues = (values) => {
+        Object.entries(values || {}).forEach(([name, value]) => {
+            const field = document.querySelector(`[name="${name}"]`);
+            if (field) {
+                field.value = value;
+            }
+        });
+    };
+
+    const ensureCameraAvailable = (() => {
+        let cache = null;
+        return async () => {
+            if (cache !== null) {
+                return cache;
+            }
+            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                cache = false;
+                return cache;
+            }
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                cache = devices.some((device) => device.kind === 'videoinput');
+            } catch {
+                cache = false;
+            }
+            return cache;
+        };
+    })();
 
     const markOriginalRequired = (section) => {
         section.querySelectorAll('input, select, textarea').forEach((field) => {
@@ -284,6 +411,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleSectionFields(directSection, false);
             toggleSectionFields(respSection, true);
         }
+        storeFormDraft();
     };
 
     const updateSections = () => {
@@ -303,16 +431,74 @@ document.addEventListener('DOMContentLoaded', () => {
             const match = Array.from(options).find((opt) => opt.value === dirName.value);
             if (match) {
                 dirWhatsapp.value = match.getAttribute('data-whatsapp') || '';
-                if (dirEmail) {
-                    dirEmail.value = match.getAttribute('data-email') || '';
-                }
             }
         });
+    }
+    const dirPhotoInput = document.getElementById('dir-photo-input');
+    const dirPhotoPreview = document.getElementById('dir-photo-preview');
+    if (dirPhotoInput && dirPhotoPreview) {
+        const dirPreviewImage = dirPhotoPreview.querySelector('img');
+        const dirPreviewPlaceholder = dirPhotoPreview.querySelector('span');
+        const dirCameraButton = document.querySelector('[data-dir-camera]');
+        const dirFileButton = document.querySelector('[data-dir-file]');
+        let dirObjectUrl;
+        const cleanupDirPreview = () => {
+            if (dirObjectUrl) {
+                URL.revokeObjectURL(dirObjectUrl);
+                dirObjectUrl = null;
+            }
+        };
+        const updateDirPreview = () => {
+            const file = dirPhotoInput.files && dirPhotoInput.files[0];
+            if (file) {
+                cleanupDirPreview();
+                dirObjectUrl = URL.createObjectURL(file);
+                if (dirPreviewImage) {
+                    dirPreviewImage.src = dirObjectUrl;
+                    dirPreviewImage.style.display = 'block';
+                }
+                if (dirPreviewPlaceholder) {
+                    dirPreviewPlaceholder.style.display = 'none';
+                }
+            } else {
+                cleanupDirPreview();
+                if (dirPreviewImage) {
+                    dirPreviewImage.src = '';
+                    dirPreviewImage.style.display = 'none';
+                }
+                if (dirPreviewPlaceholder) {
+                    dirPreviewPlaceholder.style.display = 'block';
+                }
+            }
+        };
+        const openDirCamera = async () => {
+            const available = await ensureCameraAvailable();
+            if (!available) {
+                alert('Não há nenhuma câmera conectada ao dispositivo.');
+                return;
+            }
+            dirPhotoInput.setAttribute('capture', 'environment');
+            dirPhotoInput.click();
+        };
+        const openDirFile = () => {
+            dirPhotoInput.removeAttribute('capture');
+            dirPhotoInput.click();
+        };
+        dirPhotoInput.addEventListener('change', () => {
+            dirPhotoInput.removeAttribute('capture');
+            updateDirPreview();
+        });
+        if (dirFileButton) {
+            dirFileButton.addEventListener('click', openDirFile);
+        }
+        if (dirCameraButton) {
+            dirCameraButton.addEventListener('click', openDirCamera);
+        }
     }
 
     let childIndexCounter = 0;
 
-    function addChild(data={}) {
+    function addChild(data = {}) {
         const card = document.createElement('div');
         card.className = 'child-card';
         const childIndex = data.idx ?? childIndexCounter++;
@@ -340,52 +526,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             </div>
             <div class="row-wide">
-                <div><label class="required">Nome<input name="child_name" value="${childData.name||''}" required placeholder="Primeiro nome"></label></div>
-                <div><label class="required">Sobrenome<input name="child_last" value="${childData.last||''}" required placeholder="Sobrenome"></label></div>
-                <div><label class="required">Nascimento<input type="date" name="child_birth" value="${childData.birth||''}" required></label></div>
+                <div><label class="required">Nome<input name="child_name" value="${childData.name || ''}" required placeholder="Primeiro nome"></label></div>
+                <div><label class="required">Sobrenome<input name="child_last" value="${childData.last || ''}" required placeholder="Sobrenome"></label></div>
+                <div><label class="required">Nascimento<input type="date" name="child_birth" value="${childData.birth || ''}" required></label></div>
                 <div><label class="required">Sexo
                     <select name="child_gender" required>
                         <option value="">Selecione</option>
-                        <option ${childData.gender==='M'?'selected':''} value="M">Masculino</option>
-                        <option ${childData.gender==='F'?'selected':''} value="F">Feminino</option>
+                        <option ${childData.gender === 'M' ? 'selected' : ''} value="M">Masculino</option>
+                        <option ${childData.gender === 'F' ? 'selected' : ''} value="F">Feminino</option>
                     </select>
                 </label></div>
             </div>
             <div class="row-wide">
-                <div><label class="required">CPF ou certidão de nascimento<input name="child_birth_certificate" value="${childData.birth_cert||''}" required placeholder="CPF ou número da certidão"></label></div>
+                <div><label class="required">CPF ou certidão de nascimento<input name="child_identity" value="${childData.birth_cert || ''}" required placeholder="CPF ou número da certidão"></label></div>
             </div>
             <div class="row-wide">
-                <div><label class="required">Nome completo do pai<input name="child_father_name" value="${childData.father_name||''}" data-parent-required="true" required></label></div>
-                <div><label class="required">CPF do pai<input name="child_father_cpf" value="${childData.father_cpf||''}" data-parent-required="true" required></label></div>
-                <div><label class="required">Telefone do pai<input name="child_father_phone" value="${childData.father_phone||''}" data-parent-required="true" required></label></div>
+                <div><label class="required">Nome completo do pai<input name="child_father_name" value="${childData.father_name || ''}" data-parent-required="true" required></label></div>
+                <div><label class="required">CPF do pai<input name="child_father_cpf" value="${childData.father_cpf || ''}" data-parent-required="true" required></label></div>
+                <div><label class="required">Telefone do pai<input name="child_father_phone" value="${childData.father_phone || ''}" data-parent-required="true" required></label></div>
                 <div>
                     <label style="display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" name="child_father_absent" value="${childData.idx}" ${childData.father_absent?'checked':''}> Pai ausente/desconhecido
+                        <input type="checkbox" name="child_father_absent" value="${childData.idx}" ${childData.father_absent ? 'checked' : ''}> Pai ausente/desconhecido
                     </label>
                 </div>
             </div>
             <div class="row-wide">
-                <div><label class="required">Nome completo da mãe<input name="child_mother_name" value="${childData.mother_name||''}" data-parent-required="true" required></label></div>
-                <div><label class="required">CPF da mãe<input name="child_mother_cpf" value="${childData.mother_cpf||''}" data-parent-required="true" required></label></div>
-                <div><label class="required">Telefone da mãe<input name="child_mother_phone" value="${childData.mother_phone||''}" data-parent-required="true" required></label></div>
+                <div><label class="required">Nome completo da mãe<input name="child_mother_name" value="${childData.mother_name || ''}" data-parent-required="true" required></label></div>
+                <div><label class="required">CPF da mãe<input name="child_mother_cpf" value="${childData.mother_cpf || ''}" data-parent-required="true" required></label></div>
+                <div><label class="required">Telefone da mãe<input name="child_mother_phone" value="${childData.mother_phone || ''}" data-parent-required="true" required></label></div>
                 <div>
                     <label style="display:flex; align-items:center; gap:8px;">
-                        <input type="checkbox" name="child_mother_absent" value="${childData.idx}" ${childData.mother_absent?'checked':''}> Mãe ausente/desconhecida
+                        <input type="checkbox" name="child_mother_absent" value="${childData.idx}" ${childData.mother_absent ? 'checked' : ''}> Mãe ausente/desconhecida
                     </label>
                 </div>
             </div>
             <div class="row">
-                <div><label>Alergias<textarea name="child_allergies" rows="3">${childData.allergies||''}</textarea></label></div>
-                <div><label>Medicamentos contínuos<textarea name="child_meds" rows="3">${childData.meds||''}</textarea></label></div>
+                <div><label>Alergias<textarea name="child_allergies" rows="3">${childData.allergies || ''}</textarea></label></div>
+                <div><label>Medicamentos contínuos<textarea name="child_meds" rows="3">${childData.meds || ''}</textarea></label></div>
             </div>
             <div class="row">
-                <div><label>Restrições<textarea name="child_restr" rows="3">${childData.restr||''}</textarea></label></div>
-                <div><label>Observações<textarea name="child_obs" rows="3">${childData.obs||''}</textarea></label></div>
+                <div><label>Restrições<textarea name="child_restr" rows="3">${childData.restr || ''}</textarea></label></div>
+                <div><label>Observações<textarea name="child_obs" rows="3">${childData.obs || ''}</textarea></label></div>
             </div>
             <div class="row">
-                <div><label class="required">Contato emergência<input name="child_emerg" value="${childData.emerg||''}" placeholder="Nome do contato" required></label></div>
-                <div><label class="required">Fone emergência<input name="child_emerg_phone" value="${childData.emerg_phone||''}" placeholder="WhatsApp do contato" required></label></div>
-                <div><label class="required">Plano de saúde<input name="child_plan" value="${childData.plan||''}" placeholder="Ex: Unimed" required></label></div>
+                <div><label class="required">Contato emergência<input name="child_emerg" value="${childData.emerg || ''}" placeholder="Nome do contato" required></label></div>
+                <div><label class="required">Fone emergência<input name="child_emerg_phone" value="${childData.emerg_phone || ''}" placeholder="WhatsApp do contato" required></label></div>
+                <div><label class="required">Plano de saúde<input name="child_plan" value="${childData.plan || ''}" placeholder="Ex: Unimed" required></label></div>
             </div>
         `;
         let currentObjectUrl;
@@ -398,6 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
         card.querySelector('.btn-danger').addEventListener('click', () => {
             cleanupPreview();
             card.remove();
+            storeFormDraft();
         });
         const toggleParentFields = (checkbox, selectors) => {
             if (!checkbox) return;
@@ -410,7 +597,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             };
             toggle();
-            checkbox.addEventListener('change', toggle);
+            checkbox.addEventListener('change', () => {
+                toggle();
+                storeFormDraft();
+            });
         };
 
         toggleParentFields(
@@ -451,9 +641,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     previewPlaceholder.style.display = 'block';
                 }
             }
+            storeFormDraft();
         };
-        const openCameraCapture = () => {
+        const openCameraCapture = async () => {
             if (!photoInput) return;
+            const available = await ensureCameraAvailable();
+            if (!available) {
+                alert('Não há nenhuma câmera conectada ao dispositivo.');
+                return;
+            }
             photoInput.setAttribute('capture', 'environment');
             photoInput.click();
         };
@@ -475,10 +671,48 @@ document.addEventListener('DOMContentLoaded', () => {
             fileButton.addEventListener('click', openFilePicker);
         }
         container.appendChild(card);
+        storeFormDraft();
     }
 
+    const restoreFormDraft = () => {
+        if (!window.sessionStorage) return false;
+        const raw = sessionStorage.getItem(FORM_DRAFT_KEY);
+        if (!raw) return false;
+        try {
+            const draft = JSON.parse(raw);
+            if (draft.signupType) {
+                setActiveType(draft.signupType);
+            }
+            applyFieldValues(draft.responsavel);
+            applyFieldValues(draft.directoria);
+            if (Array.isArray(draft.children) && draft.children.length) {
+                container.innerHTML = '';
+                childIndexCounter = 0;
+                draft.children.forEach((child) => addChild(child));
+                return true;
+            }
+        } catch (error) {
+            console.error('Erro ao restaurar o cadastro:', error);
+        }
+        return false;
+    };
+
+    const restoreServerChildDraft = () => {
+        if (serverChildDraft.length) {
+            container.innerHTML = '';
+            childIndexCounter = 0;
+            serverChildDraft.forEach((child) => addChild(child));
+            return true;
+        }
+        return false;
+    };
+
+    if (!restoreFormDraft()) {
+        if (!restoreServerChildDraft()) {
+            addChild();
+        }
+    }
     addBtn.addEventListener('click', () => addChild());
-    addChild();
 
     const formElement = document.querySelector('form');
     const clientError = document.getElementById('client-validation');
@@ -492,12 +726,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (formElement) {
         formElement.addEventListener('submit', (event) => {
+            storeFormDraft();
             const invalidFields = Array.from(formElement.querySelectorAll(':invalid'));
             if (invalidFields.length) {
                 event.preventDefault();
                 invalidFields.forEach((field) => field.classList.add('field-error'));
                 clientError.textContent = 'Preencha todos os campos obrigatórios destacados.';
                 clientError.style.display = 'block';
+                invalidFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
                 invalidFields[0].focus();
             }
         });
@@ -508,7 +744,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 target.classList.remove('field-error');
                 clearValidation();
             }
+            storeFormDraft();
         });
+        formElement.addEventListener('change', () => storeFormDraft());
     }
 });
 </script>

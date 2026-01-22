@@ -17,7 +17,7 @@ class UserAdmin(BaseUserAdmin):
 
     fieldsets = (
         (None, {'fields': ('whatsapp_number', 'password')}),
-        (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email', 'role')}),
+        (_('Informações pessoais'), {'fields': ('first_name', 'last_name', 'email', 'photo', 'role')}),
         (_('Permissões'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         (_('Datas importantes'), {'fields': ('last_login', 'date_joined')}),
     )
