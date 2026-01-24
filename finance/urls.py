@@ -13,4 +13,5 @@ urlpatterns = [
     path('my/<int:child_id>/fee/<int:fee_id>/pay/', views.fee_payment, name='finance-fee-payment'),
     path('my/<int:child_id>/pay-open/', views.pay_all_open, name='finance-pay-all-open'),
     path('discount/<int:child_id>/', views_discount.apply_discount, name='finance-discount'),
+    path('mercadopago/webhook/', views.mercadopago_webhook, name='finance-mercadopago-webhook'),
 ]

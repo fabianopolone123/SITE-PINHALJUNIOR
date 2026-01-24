@@ -53,6 +53,8 @@ class Payment(models.Model):
     method = models.CharField('Método', max_length=50, blank=True)
     paid_at = models.DateTimeField('Pago em', null=True, blank=True)
     note = models.TextField('Observação', blank=True)
+    external_id = models.CharField('ID externo', max_length=128, blank=True, db_index=True)
+    external_reference = models.CharField('Referência externa', max_length=128, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

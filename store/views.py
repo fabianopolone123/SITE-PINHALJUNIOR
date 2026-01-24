@@ -4,6 +4,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import User
+from core.mercadopago import create_mercadopago_preference
 from core.permissions import role_required
 from .forms import ProductForm
 from .models import Cart, CartItem, Category, Order, OrderItem, Product
@@ -115,7 +116,22 @@ def pay_order(request, order_id):
         messages.success(request, f'Pedido {order.id} marcado como pago.')
         return redirect('store-orders')
     pix_code = f"PIX-ORDER-{order.id}-{int(order.total)}-{order.user.whatsapp_number}"
-    return render(request, 'store/pix_payment.html', {'order': order, 'pix_code': pix_code, 'title': 'Pagamento PIX'})
+    mp_preference = create_mercadopago_preference(
+        request,
+        description=f'Pedido {order.id}',
+        amount=order.total,
+        external_reference=f'ORDER:{order.id}',
+    )
+    return render(
+        request,
+        'store/pix_payment.html',
+        {
+            'order': order,
+            'pix_code': pix_code,
+            'mp_preference': mp_preference,
+            'title': 'Pagamento PIX',
+        },
+    )
 
 
 @role_required([User.Role.DIRETORIA, User.Role.TESOUREIRO])

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load curriculum_extras %}
-{% block title %}Pagamento PIX{% endblock %}
+{% block title %}Pagamento MercadoPago{% endblock %}
 {% block menu %}
     <a href="{% url 'dashboard' %}">Inicio</a>
     <a href="{% url 'finance-my' %}">Financeiro</a>
@@ -11,6 +11,22 @@
     <div class="chip">Pagamento PIX</div>
     <p style="margin-bottom:4px;"><strong>{{ child.name }}</strong> | {{ description }}</p>
     <p style="margin-top:0; color:#475569;">Total: R$ {{ total_amount|currency_br }}</p>
+    {% if mp_preference %}
+    <div style="display:grid; gap:16px; padding:16px; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc; margin-bottom:12px;">
+        <div>
+            <p style="margin:0 0 6px;">Pagamento criado no MercadoPago. Clique no botão abaixo para finalizar a cobrança oficial.</p>
+            {% if mp_preference.init_point %}
+            <a href="{{ mp_preference.init_point }}" target="_blank" rel="noreferrer" style="display:inline-flex; align-items:center; gap:8px; padding:12px 16px; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:700; text-decoration:none;">Abrir MercadoPago</a>
+            {% endif %}
+        </div>
+        {% if mp_preference.sandbox_init_point %}
+        <div style="font-size:0.85rem; color:#475569;">
+            Sandbox: <a href="{{ mp_preference.sandbox_init_point }}" target="_blank" rel="noreferrer" style="text-decoration:underline;">abrir link de teste</a>
+        </div>
+        {% endif %}
+        <p style="margin:0; color:#475569;">Quando o pagamento for aprovado, o sistema atualiza automaticamente graças ao webhook do MercadoPago, então não é necessário confirmar por aqui.</p>
+    </div>
+    {% else %}
     <div style="display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); align-items:center;">
         <div style="background:#0f172a; color:#fff; padding:18px; border-radius:14px; text-align:center;">
             <div style="font-weight:800; margin-bottom:12px;">QR Code (placeholder)</div>
@@ -20,22 +36,23 @@
         </div>
         <div style="display:grid; gap:12px;">
             <div>
-                <p style="margin:0 0 6px;">Codigo PIX (copia e cola)</p>
+                <p style="margin:0 0 6px;">Código PIX (copia e cola)</p>
                 <div style="display:flex; gap:8px; align-items:center;">
                     <input type="text" id="pix-code" value="{{ pix_code }}" readonly style="flex:1; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-family:monospace;">
                     <button type="button" id="copy-btn" style="padding:10px 14px; border:none; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:700;">Copiar</button>
                 </div>
             </div>
-            <p style="margin:0; color:#475569;">Abra seu app bancario, cole o codigo e confirme o pagamento. Depois clique em Confirmar pagamento.</p>
+            <p style="margin:0; color:#475569;">Abra seu app bancário, cole o código e confirme o pagamento. Depois clique em Confirmar pagamento.</p>
             <form method="post" action="{{ action_url }}">
                 {% csrf_token %}
                 <button type="submit" style="width:100%; padding:14px; border:none; border-radius:12px; background:linear-gradient(90deg,#22c55e,#16a34a); color:#fff; font-weight:800;">Confirmar pagamento</button>
             </form>
         </div>
     </div>
+    {% endif %}
 
     <div style="margin-top:24px;">
-        <div style="font-weight:700; margin-bottom:6px;">Mensalidades nesta cobranca</div>
+        <div style="font-weight:700; margin-bottom:6px;">Mensalidades nesta cobrança</div>
         <div style="display:grid; gap:10px;">
             {% for entry in fees %}
             {% with fee=entry.fee %}
@@ -50,6 +67,7 @@
         </div>
     </div>
 </div>
+{% if not mp_preference %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const copyBtn = document.getElementById('copy-btn');
@@ -67,4 +85,5 @@
         });
     });
 </script>
+{% endif %}
 {% endblock %}
