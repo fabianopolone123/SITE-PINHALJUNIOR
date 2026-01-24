@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from accounts.models import User
 from children.models import Child, GuardianChild
-from core.mercadopago import create_mercadopago_preference
+from core.mercadopago import create_mercadopago_pix_payment
 from core.permissions import role_required
 
 import config
@@ -215,7 +215,7 @@ def fee_payment(request, child_id, fee_id):
     fee = get_object_or_404(Fee, pk=fee_id, child=child)
     effective = _effective_status(fee)
     pix_code = _build_pix_code('FEE', str(fee.id), fee.final_amount or Decimal('0.00'))
-    mp_preference = create_mercadopago_preference(
+    mp_payment = create_mercadopago_pix_payment(
         request,
         description=f'Mensalidade {fee.reference_month} - {child.name}',
         amount=fee.final_amount or Decimal('0.00'),
@@ -241,7 +241,7 @@ def fee_payment(request, child_id, fee_id):
             'fees': [{'fee': fee, 'effective_status': effective}],
             'total_amount': fee.final_amount or Decimal('0.00'),
             'pix_code': pix_code,
-            'mp_preference': mp_preference,
+            'mp_payment': mp_payment,
             'description': f'Mensalidade {fee.reference_month}',
             'action_url': request.path,
             'status_labels': STATUS_LABELS,
@@ -268,11 +268,11 @@ def pay_all_open(request, child_id):
         messages.info(request, 'Não há mensalidades em aberto para pagar no momento.')
         return redirect('finance-my-child', child_id=child.id)
     pix_code = _build_pix_code('ALL', f'{child.id}', total or Decimal('0.00'))
-    mp_preference = create_mercadopago_preference(
+    mp_payment = create_mercadopago_pix_payment(
         request,
         description=f'Mensalidades em aberto de {child.name}',
         amount=total,
-        external_reference=f'FEE_ALL:{child.id}',
+        external_reference=f'FEE_OPEN:{child.id}',
     )
     if request.method == 'POST':
         with transaction.atomic():
@@ -297,7 +297,7 @@ def pay_all_open(request, child_id):
             'fees': open_entries,
             'total_amount': total,
             'pix_code': pix_code,
-            'mp_preference': mp_preference,
+            'mp_payment': mp_payment,
             'description': 'Mensalidades em aberto do seu aventureiro',
             'action_url': request.path,
             'status_labels': STATUS_LABELS,

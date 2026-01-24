@@ -11,20 +11,25 @@
     <div class="chip">Pagamento PIX</div>
     <p style="margin-bottom:4px;"><strong>{{ child.name }}</strong> | {{ description }}</p>
     <p style="margin-top:0; color:#475569;">Total: R$ {{ total_amount|currency_br }}</p>
-    {% if mp_preference %}
+    {% if mp_payment and mp_payment.qr_code %}
     <div style="display:grid; gap:16px; padding:16px; border-radius:12px; border:1px solid #e2e8f0; background:#f8fafc; margin-bottom:12px;">
-        <div>
-            <p style="margin:0 0 6px;">Pagamento criado no MercadoPago. Clique no botão abaixo para finalizar a cobrança oficial.</p>
-            {% if mp_preference.init_point %}
-            <a href="{{ mp_preference.init_point }}" target="_blank" rel="noreferrer" style="display:inline-flex; align-items:center; gap:8px; padding:12px 16px; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:700; text-decoration:none;">Abrir MercadoPago</a>
+        <div style="text-align:center;">
+            {% if mp_payment.qr_code_base64 %}
+            <img src="data:image/png;base64,{{ mp_payment.qr_code_base64 }}" alt="QR Code PIX" style="max-width:260px; width:100%; height:auto; margin-bottom:10px; border-radius:12px; background:#fff; padding:6px;">
             {% endif %}
+            <p style="margin:0 0 6px;">Cole ou escaneie o QR Code do MercadoPago.</p>
         </div>
-        {% if mp_preference.sandbox_init_point %}
-        <div style="font-size:0.85rem; color:#475569;">
-            Sandbox: <a href="{{ mp_preference.sandbox_init_point }}" target="_blank" rel="noreferrer" style="text-decoration:underline;">abrir link de teste</a>
+        <div>
+            <p style="margin:0 0 6px;">Código PIX oficial</p>
+            <div style="display:flex; gap:8px; align-items:center;">
+                <input type="text" id="mp-code" value="{{ mp_payment.qr_code }}" readonly style="flex:1; padding:10px 12px; border:1px solid #cbd5e1; border-radius:10px; font-family:monospace;">
+                <button type="button" id="copy-btn" style="padding:10px 14px; border:none; border-radius:10px; background:#0ea5e9; color:#fff; font-weight:700;">Copiar</button>
+            </div>
         </div>
+        <p style="margin:0; color:#475569;">O pagamento via MercadoPago será registrado automaticamente. Ao receber a notificação, o sistema mostra a confirmação e volta à tela anterior.</p>
+        {% if mp_payment.expiration_date %}
+        <p style="margin:0; font-size:0.85rem; color:#475569;">Expira em {{ mp_payment.expiration_date }}</p>
         {% endif %}
-        <p style="margin:0; color:#475569;">Quando o pagamento for aprovado, o sistema atualiza automaticamente graças ao webhook do MercadoPago, então não é necessário confirmar por aqui.</p>
     </div>
     {% else %}
     <div style="display:grid; gap:20px; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); align-items:center;">
@@ -67,11 +72,10 @@
         </div>
     </div>
 </div>
-{% if not mp_preference %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const copyBtn = document.getElementById('copy-btn');
-        const codeInput = document.getElementById('pix-code');
+        const codeInput = document.getElementById('mp-code') || document.getElementById('pix-code');
         if (!copyBtn || !codeInput) return;
         copyBtn.addEventListener('click', async () => {
             try {
@@ -85,5 +89,4 @@
         });
     });
 </script>
-{% endif %}
 {% endblock %}

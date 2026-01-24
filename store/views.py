@@ -4,7 +4,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import User
-from core.mercadopago import create_mercadopago_preference
+from core.mercadopago import create_mercadopago_pix_payment
 from core.permissions import role_required
 from .forms import ProductForm
 from .models import Cart, CartItem, Category, Order, OrderItem, Product
@@ -116,7 +116,7 @@ def pay_order(request, order_id):
         messages.success(request, f'Pedido {order.id} marcado como pago.')
         return redirect('store-orders')
     pix_code = f"PIX-ORDER-{order.id}-{int(order.total)}-{order.user.whatsapp_number}"
-    mp_preference = create_mercadopago_preference(
+    mp_payment = create_mercadopago_pix_payment(
         request,
         description=f'Pedido {order.id}',
         amount=order.total,
@@ -128,7 +128,7 @@ def pay_order(request, order_id):
         {
             'order': order,
             'pix_code': pix_code,
-            'mp_preference': mp_preference,
+            'mp_payment': mp_payment,
             'title': 'Pagamento PIX',
         },
     )

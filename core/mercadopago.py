@@ -2,6 +2,7 @@ import json
 import logging
 import urllib.error
 import urllib.request
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
 from django.urls import reverse
@@ -22,37 +23,36 @@ def _normalize_amount(amount) -> Decimal:
         return Decimal('0.00')
 
 
-def create_mercadopago_preference(request, description: str, amount, external_reference: str) -> dict | None:
+def _build_notification_url(request):
+    return request.build_absolute_uri(reverse('finance-mercadopago-webhook'))
+
+
+def create_mercadopago_pix_payment(request, description: str, amount, external_reference: str) -> dict | None:
     if not external_reference:
         return None
     normalized = _normalize_amount(amount)
     if normalized <= 0:
         return None
     base_url = config.MERCADOPAGO_BASE_URL.rstrip('/')
-    url = f'{base_url}/checkout/preferences'
+    url = f'{base_url}/v1/payments'
     payload = {
-        'items': [
-            {
-                'title': description.strip() or 'Pagamento Aventureiros',
-                'quantity': 1,
-                'unit_price': float(normalized),
-            }
-        ],
+        'transaction_amount': float(normalized),
+        'currency_id': 'BRL',
+        'payment_method_id': 'pix',
+        'description': description.strip() or 'Pagamento Aventureiros',
         'external_reference': str(external_reference).strip(),
-        'notification_url': request.build_absolute_uri(reverse('finance-mercadopago-webhook')),
-        'auto_return': 'approved',
+        'notification_url': _build_notification_url(request),
         'binary_mode': True,
-        'back_urls': {
-            'success': request.build_absolute_uri(reverse('dashboard')),
-            'failure': request.build_absolute_uri(reverse('dashboard')),
-            'pending': request.build_absolute_uri(reverse('dashboard')),
-        },
+        'date_of_expiration': (datetime.utcnow().isoformat() + 'Z'),
     }
-    payer_email = None
+    payer_email = ''
+    payer = {}
     if getattr(request, 'user', None):
-        payer_email = getattr(request.user, 'email', None)
+        payer_email = getattr(request.user, 'email', '') or ''
     if payer_email:
-        payload['payer'] = {'email': payer_email.strip()}
+        payer['email'] = payer_email.strip()
+    if payer:
+        payload['payer'] = payer
     data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
     headers = {
         'Authorization': f'Bearer {config.MERCADOPAGO_ACCESS_TOKEN}',
@@ -62,11 +62,21 @@ def create_mercadopago_preference(request, description: str, amount, external_re
     try:
         with urllib.request.urlopen(request_obj, timeout=20) as response:
             body = response.read()
-            return json.loads(body or b'{}')
+            data = json.loads(body or b'{}')
+            interaction = data.get('point_of_interaction', {}).get('data', {})
+            return {
+                'id': data.get('id'),
+                'status': data.get('status'),
+                'transaction_amount': data.get('transaction_amount'),
+                'expiration_date': interaction.get('date_of_expiration'),
+                'qr_code': interaction.get('qr_code'),
+                'qr_code_base64': interaction.get('qr_code_base64'),
+                'external_reference': data.get('external_reference'),
+            }
     except urllib.error.HTTPError as exc:
-        logger.warning('Erro HTTP ao criar preferência MercadoPago %s: %s', external_reference, exc)
+        logger.warning('Erro HTTP ao criar pagamento PIX MercadoPago %s: %s', external_reference, exc)
     except urllib.error.URLError as exc:
-        logger.warning('Erro de rede ao criar preferência MercadoPago %s: %s', external_reference, exc)
+        logger.warning('Erro de rede ao criar pagamento PIX MercadoPago %s: %s', external_reference, exc)
     except json.JSONDecodeError:
-        logger.exception('Resposta inválida ao criar preferência MercadoPago %s', external_reference)
+        logger.exception('Resposta invalida ao criar pagamento PIX MercadoPago %s', external_reference)
     return None
