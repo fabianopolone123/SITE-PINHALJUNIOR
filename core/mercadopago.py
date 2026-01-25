@@ -106,7 +106,17 @@ def create_mercadopago_pix_payment(request, description: str, amount, external_r
                 'external_reference': data.get('external_reference'),
             }
     except urllib.error.HTTPError as exc:
-        logger.warning('Erro HTTP ao criar pagamento PIX MercadoPago %s: %s', external_reference, exc)
+        body = None
+        try:
+            body = exc.read().decode('utf-8', errors='ignore')
+        except Exception:
+            body = '<erro lendo corpo da resposta>'
+        logger.warning(
+            'Erro HTTP ao criar pagamento PIX MercadoPago %s: %s. Body: %s',
+            external_reference,
+            exc,
+            body,
+        )
     except urllib.error.URLError as exc:
         logger.warning('Erro de rede ao criar pagamento PIX MercadoPago %s: %s', external_reference, exc)
     except json.JSONDecodeError:
