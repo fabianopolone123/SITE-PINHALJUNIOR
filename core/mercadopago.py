@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import urllib.error
 import urllib.request
 import hashlib
@@ -12,6 +13,34 @@ from django.urls import reverse
 import config
 
 logger = logging.getLogger(__name__)
+DEFAULT_PAYER_EMAIL_DOMAIN = 'pinhaljunior.com.br'
+
+
+def _sanitize_email_local(value: str) -> str:
+    return ''.join(ch for ch in value if ch.isalnum())
+
+
+def _build_payer_payload(request):
+    user = getattr(request, 'user', None)
+    if not (user and getattr(user, 'is_authenticated', False)):
+        return {}
+    payer = {}
+    email = (getattr(user, 'email', '') or '').strip()
+    whatsapp = (getattr(user, 'whatsapp_number', '') or '').strip()
+    if not email and whatsapp:
+        local = _sanitize_email_local(whatsapp)
+        if not local:
+            local = 'usuario'
+        email = f'{local}@{DEFAULT_PAYER_EMAIL_DOMAIN}'
+    if email:
+        payer['email'] = email
+    first_name = (getattr(user, 'first_name', '') or '').strip()
+    last_name = (getattr(user, 'last_name', '') or '').strip()
+    if first_name:
+        payer['first_name'] = first_name
+    if last_name:
+        payer['last_name'] = last_name
+    return payer
 
 
 def _normalize_amount(amount) -> Decimal:
@@ -77,12 +106,7 @@ def create_mercadopago_pix_payment(request, description: str, amount, external_r
         'binary_mode': True,
         'date_of_expiration': (datetime.utcnow().isoformat() + 'Z'),
     }
-    payer_email = ''
-    payer = {}
-    if getattr(request, 'user', None):
-        payer_email = getattr(request.user, 'email', '') or ''
-    if payer_email:
-        payer['email'] = payer_email.strip()
+    payer = _build_payer_payload(request)
     if payer:
         payload['payer'] = payer
     data = json.dumps(payload, ensure_ascii=False).encode('utf-8')
