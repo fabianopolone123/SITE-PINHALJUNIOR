@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <div class="module">
+    <h1>app.log</h1>
+    <p>Últimas {{ log_tail }} entradas do arquivo de logs.</p>
+    <p>Path: {{ log_path }}</p>
+    {% if log_exists %}
+      <pre style="background:#0f172a; color:#f8fafc; padding:16px; border-radius:12px; max-height:65vh; overflow:auto; white-space:pre-wrap;">{{ log_content }}</pre>
+    {% else %}
+      <p>Arquivo não encontrado. Verifique se os logs estão sendo escritos em <code>{{ log_path }}</code>.</p>
+    {% endif %}
+    <p style="margin-top:16px;">
+      <a class="button" href="{% url 'admin:audit_activitylog_changelist' %}">Voltar aos eventos</a>
+    </p>
+  </div>
+{% endblock %}

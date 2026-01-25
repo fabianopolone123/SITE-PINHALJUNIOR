@@ -1,9 +1,14 @@
 import csv
 import json
+from collections import deque
 from datetime import timedelta
+from pathlib import Path
 
+from django.conf import settings
 from django.contrib import admin
 from django.http import HttpResponse
+from django.shortcuts import render
+from django.urls import path
 from django.utils import timezone
 
 from .models import ActivityLog
@@ -53,6 +58,7 @@ class ActivityLogAdmin(admin.ModelAdmin):
     change_list_template = 'admin/audit/activitylog/change_list.html'
     actions = ['export_selected_as_csv']
     max_export_rows = 10000
+    log_tail_lines = 500
 
     def changelist_view(self, request, extra_context=None):
         if request.GET.get('export') == 'csv':
@@ -104,6 +110,40 @@ class ActivityLogAdmin(admin.ModelAdmin):
                 self._stringify_payload(log.payload),
             ])
         return response
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                'view-log/',
+                self.admin_site.admin_view(self.view_log),
+                name='audit_activitylog_view_log',
+            ),
+        ]
+        return custom_urls + urls
+
+    def view_log(self, request):
+        log_dir = getattr(settings, 'LOG_DIR', None)
+        if log_dir is None:
+            log_dir = Path(settings.BASE_DIR) / 'logs'
+        log_path = Path(log_dir) / 'app.log'
+        exists = log_path.exists()
+        log_content = ''
+        if exists:
+            try:
+                with log_path.open('r', encoding='utf-8', errors='ignore') as fh:
+                    log_content = ''.join(deque(fh, maxlen=self.log_tail_lines))
+            except Exception:
+                log_content = 'Não foi possível ler o arquivo de log.'
+        context = {
+            **self.admin_site.each_context(request),
+            'title': 'app.log',
+            'log_path': log_path,
+            'log_content': log_content,
+            'log_exists': exists,
+            'log_tail': self.log_tail_lines,
+        }
+        return render(request, 'admin/audit/activitylog/view_log.html', context)
 
     def _stringify_payload(self, payload):
         if not payload:
