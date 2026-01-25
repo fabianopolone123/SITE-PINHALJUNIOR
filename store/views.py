@@ -120,6 +120,7 @@ def pay_order(request, order_id):
         messages.success(request, f'Pedido {order.id} marcado como pago.')
         return redirect('store-orders')
     pix_code = f"PIX-ORDER-{order.id}-{int(order.total)}-{order.user.whatsapp_number}"
+    # Este bloco resolve o erro 500 anterior ao evitar o import defasado e usar o helper correto
     mp_payment = create_mercadopago_pix_payment(
         request,
         description=f'Pedido {order.id}',

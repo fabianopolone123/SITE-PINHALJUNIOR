@@ -2,6 +2,8 @@ import json
 import logging
 import urllib.error
 import urllib.request
+import hashlib
+import hmac
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
 
@@ -25,6 +27,36 @@ def _normalize_amount(amount) -> Decimal:
 
 def _build_notification_url(request):
     return request.build_absolute_uri(reverse('finance-mercadopago-webhook'))
+
+
+def verify_mercadopago_signature(request) -> bool:
+    secret = config.MERCADOPAGO_WEBHOOK_SECRET or ''
+    if not secret:
+        logger.warning('Segredo do webhook do MercadoPago não configurado, rejeitando chamada')
+        return False
+    header = (
+        request.META.get('HTTP_X_HUB_SIGNATURE')
+        or request.META.get('HTTP_X_MERCADOPAGO_SIGNATURE')
+        or ''
+    )
+    if not header:
+        logger.warning('Assinatura do MercadoPago ausente no webhook')
+        return False
+    algo = 'sha1'
+    signature = header
+    if '=' in header:
+        algo_name, signature = header.split('=', 1)
+        algo = algo_name.lower()
+    try:
+        digestmod = getattr(hashlib, algo)
+    except AttributeError:
+        logger.warning('Algoritmo de assinatura desconhecido: %s', algo)
+        return False
+    computed = hmac.new(secret.encode('utf-8'), request.body or b'', digestmod).hexdigest()
+    valid = hmac.compare_digest(computed, signature)
+    if not valid:
+        logger.warning('Assinatura do MercadoPago inválida: %s', signature)
+    return valid
 
 
 def create_mercadopago_pix_payment(request, description: str, amount, external_reference: str) -> dict | None:

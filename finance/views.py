@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from accounts.models import User
 from children.models import Child, GuardianChild
-from core.mercadopago import create_mercadopago_pix_payment
+from core.mercadopago import create_mercadopago_pix_payment, verify_mercadopago_signature
 from core.permissions import role_required
 
 import config
@@ -503,6 +503,8 @@ def _fetch_mercadopago_payment(payment_id):
 def mercadopago_webhook(request):
     if request.method != 'POST':
         return HttpResponseNotAllowed(['POST'])
+    if not verify_mercadopago_signature(request):
+        return HttpResponseBadRequest('Assinatura inválida do MercadoPago')
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')
     except (json.JSONDecodeError, UnicodeDecodeError):
