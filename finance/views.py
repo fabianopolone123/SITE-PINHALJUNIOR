@@ -221,6 +221,10 @@ def fee_payment(request, child_id, fee_id):
         amount=fee.final_amount or Decimal('0.00'),
         external_reference=f'FEE:{fee.id}',
     )
+    mp_payment_error = None
+    if not mp_payment:
+        mp_payment_error = 'Não foi possível gerar o QR oficial do MercadoPago. Confira os logs para ver o erro retornado pela API.'
+        logger.error('Falha ao criar pagamento Pix MercadoPago para Fee %s (user %s)', fee_id, request.user.whatsapp_number)
     if request.method == 'POST':
         Payment.objects.create(
             fee=fee,
@@ -242,6 +246,7 @@ def fee_payment(request, child_id, fee_id):
             'total_amount': fee.final_amount or Decimal('0.00'),
             'pix_code': pix_code,
             'mp_payment': mp_payment,
+            'mp_payment_error': mp_payment_error,
             'description': f'Mensalidade {fee.reference_month}',
             'action_url': request.path,
             'status_labels': STATUS_LABELS,
@@ -274,6 +279,10 @@ def pay_all_open(request, child_id):
         amount=total,
         external_reference=f'FEE_OPEN:{child.id}',
     )
+    mp_payment_error = None
+    if not mp_payment:
+        mp_payment_error = 'Não foi possível gerar o QR oficial do MercadoPago. Confira os logs para ver o erro retornado pela API.'
+        logger.error('Falha ao criar pagamento Pix MercadoPago para fee aberto do child %s (user %s)', child_id, request.user.whatsapp_number)
     if request.method == 'POST':
         with transaction.atomic():
             for entry in open_entries:
@@ -301,6 +310,7 @@ def pay_all_open(request, child_id):
             'description': 'Mensalidades em aberto do seu aventureiro',
             'action_url': request.path,
             'status_labels': STATUS_LABELS,
+            'mp_payment_error': mp_payment_error,
         },
     )
 

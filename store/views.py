@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
@@ -8,6 +10,8 @@ from core.mercadopago import create_mercadopago_pix_payment
 from core.permissions import role_required
 from .forms import ProductForm
 from .models import Cart, CartItem, Category, Order, OrderItem, Product
+
+logger = logging.getLogger(__name__)
 
 
 def catalog(request):
@@ -122,6 +126,10 @@ def pay_order(request, order_id):
         amount=order.total,
         external_reference=f'ORDER:{order.id}',
     )
+    mp_payment_error = None
+    if not mp_payment:
+        mp_payment_error = 'Não foi possível gerar o QR oficial do MercadoPago. Confira os logs do servidor para entender o erro.'
+        logger.error('Falha ao criar pagamento Pix MercadoPago para Order %s (user %s)', order.id, request.user.whatsapp_number)
     return render(
         request,
         'store/pix_payment.html',
@@ -129,6 +137,7 @@ def pay_order(request, order_id):
             'order': order,
             'pix_code': pix_code,
             'mp_payment': mp_payment,
+            'mp_payment_error': mp_payment_error,
             'title': 'Pagamento PIX',
         },
     )
