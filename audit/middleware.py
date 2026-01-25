@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 from time import perf_counter
 
 from .models import ActivityLog
@@ -19,6 +20,7 @@ class AuditLogMiddleware:
         try:
             response = self.get_response(request)
         except Exception as exc:
+            logger.exception('Erro ao atender %s %s', request.method, request.path)
             self._log(request, response=None, exception=exc)
             raise
         else:
@@ -77,10 +79,17 @@ class AuditLogMiddleware:
         status_code = getattr(response, 'status_code', None)
         success = exception is None and (status_code is None or status_code < 400)
         message = ''
+        trace = ''
         if exception:
-            message = str(exception)
+            exception_message = ''.join(traceback.format_exception_only(type(exception), exception)).strip()
+            trace = ''.join(
+                traceback.format_exception(type(exception), exception, exception.__traceback__)
+            )
+            message = exception_message or message
         elif response is not None:
             message = getattr(response, 'reason_phrase', '')
+        if trace:
+            message = '\n'.join(filter(None, [message, trace]))
         payload_data = None
         try:
             payload_data = self._build_payload(request)
