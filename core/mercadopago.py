@@ -104,7 +104,7 @@ def create_mercadopago_pix_payment(request, description: str, amount, external_r
         'external_reference': str(external_reference).strip(),
         'notification_url': _build_notification_url(request),
         'binary_mode': True,
-        'date_of_expiration': (datetime.utcnow().isoformat() + 'Z'),
+        'date_of_expiration': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
     }
     payer = _build_payer_payload(request)
     if payer:
